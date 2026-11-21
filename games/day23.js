@@ -1,57 +1,12 @@
-// Día 23: Convence al Elfo Gruñón - usa LLM (configurable por API key/.env) con fallback
+// Día 23: Convence al Elfo Gruñón - usa LLM via proxy serverless (/api/chat) con fallback
 import { sfx } from '../js/audio.js';
 
-let envPromise = null;
-function loadEnv() {
-  if (!envPromise) {
-    envPromise = (async () => {
-      try {
-        const res = await fetch('./.env', { cache: 'no-store' });
-        if (!res.ok) return {};
-        const text = await res.text();
-        const out = {};
-        for (const line of text.split(/\r?\n/)) {
-          const t = line.trim();
-          if (!t || t.startsWith('#')) continue;
-          const eq = t.indexOf('=');
-          if (eq === -1) continue;
-          const k = t.slice(0, eq).trim();
-          let v = t.slice(eq + 1).trim();
-          if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1);
-          out[k] = v;
-        }
-        return out;
-      } catch (e) {
-        return {};
-      }
-    })();
-  }
-  return envPromise;
-}
+const LLM_PROXY_PATH = '/api/chat';
 
 export function startGame(container, config, onWin) {
   const cfg = config.gameConfig || {};
   const herName = cfg.herName || 'Bea';
   const yourName = cfg.yourName || 'Jaime';
-  let apiKey = (cfg.apiKey || '').trim();
-  let apiBase = (cfg.apiBase || 'https://api.openai.com/v1').trim().replace(/\/$/, '');
-  let model = (cfg.model || 'gpt-4o-mini').trim();
-  let envApplied = false;
-
-  async function ensureEnvConfig() {
-    if (envApplied) return;
-    const env = await loadEnv();
-    if (!apiKey) apiKey = (env.OPENAI_API_KEY || env.API_KEY || env.LLM_API_KEY || '').trim();
-    if (!cfg.apiBase && (env.OPENAI_API_BASE || env.API_BASE || env.LLM_API_BASE)) {
-      apiBase = String(env.OPENAI_API_BASE || env.API_BASE || env.LLM_API_BASE).trim().replace(/\/$/, '');
-    }
-    if (!cfg.model && (env.OPENAI_MODEL || env.MODEL || env.LLM_MODEL)) {
-      model = String(env.OPENAI_MODEL || env.MODEL || env.LLM_MODEL).trim();
-    }
-    envApplied = true;
-  }
-  // cargar .env cuanto antes
-  ensureEnvConfig().catch(() => {});
 
   let percentage = 15;
   let history = []; // {role:'assistant'|'user', content}
@@ -237,25 +192,17 @@ Devuelve SIEMPRE este JSON exacto y nada más:
     ];
   }
 
-  async function callOpenAICompatible(base, key, mdl) {
-    const resp = await fetch(`${base}/chat/completions`, {
+  async function callServerProxy() {
+    const resp = await fetch(LLM_PROXY_PATH, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(key ? { 'Authorization': `Bearer ${key}` } : {})
-      },
-      body: JSON.stringify({
-        model: mdl,
-        messages: buildMessages(),
-        temperature: 0.9
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: buildMessages(), temperature: 0.9 })
     });
-    if (!resp.ok) throw new Error('LLM error ' + resp.status);
+    if (!resp.ok) throw new Error('Proxy error ' + resp.status);
     const data = await resp.json();
-    const text = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-    const json = extractJSON(text);
+    const json = data && typeof data.respuesta === 'string' ? data : extractJSON(data && data.text);
     if (json && typeof json.respuesta === 'string') return normalize(json);
-    throw new Error('Respuesta LLM no válida');
+    throw new Error('Respuesta proxy no válida');
   }
 
   function localFallback(hist) {
@@ -314,14 +261,11 @@ Devuelve SIEMPRE este JSON exacto y nada más:
   }
 
   async function askLLM() {
-    await ensureEnvConfig();
-    // 1) Si hay API key configurada, usar endpoint compatible con OpenAI
-    if (apiKey) {
-      try {
-        return await callOpenAICompatible(apiBase, apiKey, model);
-      } catch (e) {
-        console.warn('Fallo LLM con API key, probando alternativas:', e);
-      }
+    // 1) Proxy serverless de Vercel (usa OPENAI_API_KEY del lado servidor)
+    try {
+      return await callServerProxy();
+    } catch (e) {
+      console.warn('Fallo proxy LLM, probando alternativas:', e);
     }
     // 2) Intentar endpoint público gratuito (Pollinations)
     try {

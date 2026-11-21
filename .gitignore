@@ -2,6 +2,10 @@
 .env
 .env.*
 
+# Dependencias / Vercel
+node_modules/
+.vercel/
+
 # SO / editores
 .DS_Store
 Thumbs.db

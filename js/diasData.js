@@ -199,10 +199,9 @@ export const DIAS = [
     gameId: "day23",
     gameConfig: {
       herName: "[NOMBRE_ELLA]",
-      yourName: "[TU_NOMBRE]",
-      apiKey: "", // También puedes poner la API key en el archivo .env (OPENAI_API_KEY)
-      apiBase: "https://api.openai.com/v1", // Endpoint compatible con OpenAI (/chat/completions)
-      model: "gpt-4o-mini" // Modelo de OpenAI (configurable también en .env como OPENAI_MODEL)
+      yourName: "[TU_NOMBRE]"
+      // La clave OpenAI se configura en Vercel como OPENAI_API_KEY (lado servidor, /api/chat).
+      // No pongas apiKey en el cliente.
     },
     photo: "public/fotos/dia23.svg",
     message: "Hasta el elfo gruñón se rinde ante tu encanto."
