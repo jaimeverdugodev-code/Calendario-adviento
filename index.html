@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#1B0D12" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Adviento" />
+  <meta name="description" content="Calendario de Adviento con 24 minijuegos románticos" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon.svg" />
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <title>Calendario de Adviento</title>
+</head>
+<body>
+  <div id="bg-village" aria-hidden="true"></div>
+  <div id="snow" aria-hidden="true"></div>
+  <div class="app">
+    <header class="header">
+      <div class="header-top">
+        <h1 id="header-title" class="header-title"></h1>
+        <div class="header-actions">
+          <button id="music-toggle" class="icon-btn" type="button" aria-label="Música" title="Música">♪</button>
+          <button id="admin-reset" class="admin-reset hidden" type="button" title="Resetear progreso">Reset</button>
+        </div>
+      </div>
+      <p class="header-sub">Un juego y un recuerdo cada día</p>
+      <div class="progress-wrap" aria-label="Progreso">
+        <div class="progress-garland"></div>
+        <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+        <div id="progress-text" class="progress-text">0 / 24</div>
+      </div>
+    </header>
+
+    <main>
+      <div id="calendar" class="calendar" aria-label="Calendario de 24 días"></div>
+    </main>
+  </div>
+
+  <!-- Modal de juego -->
+  <div id="game-modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Juego">
+    <div class="modal-inner game-modal-inner">
+      <button id="game-close" class="modal-close" type="button" aria-label="Cerrar">&times;</button>
+      <div class="game-header">
+        <div id="game-day-label" class="game-day-label"></div>
+        <h2 id="game-title" class="game-title"></h2>
+        <p id="game-hint" class="game-hint">Toca para jugar. Un dedo es suficiente.</p>
+      </div>
+      <div id="game-container" class="game-container"></div>
+      <div class="game-actions">
+        <button id="game-retry" class="btn btn-secondary hidden" type="button">Reintentar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de recompensa -->
+  <div id="reward-modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Recompensa">
+    <div id="confetti-layer" class="confetti-layer" aria-hidden="true"></div>
+    <div class="modal-inner reward-modal-inner">
+      <button id="reward-close" class="modal-close" type="button" aria-label="Cerrar">&times;</button>
+      <div class="reward-card">
+        <div class="reward-day" id="reward-day"></div>
+        <h2 class="reward-congrats">¡Lo lograste!</h2>
+        <div class="polaroid">
+          <img id="reward-photo" src="" alt="Recuerdo del día" />
+        </div>
+        <p id="reward-message" class="reward-message"></p>
+        <div class="reward-actions">
+          <button id="reward-replay" class="btn btn-secondary" type="button">Volver a jugar</button>
+          <button id="reward-ok" class="btn btn-primary" type="button">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

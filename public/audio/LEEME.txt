@@ -1,0 +1,9 @@
+Coloca aquí tu pista de música para que suene en la web (en bucle).
+
+- Nombres recomendados: musica.mp3, musica.ogg o musica.wav
+  (también se detectan music.mp3 o pista.mp3)
+- Formatos soportados: MP3, OGG o WAV (según el navegador).
+- Si hay un archivo válido, la web lo usará como música de fondo.
+- Si no hay archivo, sonará la melodía navideña sintetizada por defecto.
+
+Consejo: usa un archivo no muy pesado para que cargue rápido en móvil.

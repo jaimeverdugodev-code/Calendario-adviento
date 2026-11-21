@@ -1,0 +1,7 @@
+Coloca aquí la imagen que reemplazará a los carbones en el minijuego "Lluvia de Besos" (día 6).
+
+Nombres de archivo reconocidos (usa uno de estos):
+- carbon.png / .jpg / .jpeg / .webp / .svg
+- imagen.png / .jpg / .jpeg / .webp / .svg
+
+Recomendación: imagen cuadrada y, si es posible, con fondo transparente (PNG o SVG). Si no hay imagen, se mostrará el carbón por defecto.

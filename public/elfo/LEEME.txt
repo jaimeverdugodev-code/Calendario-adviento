@@ -1,0 +1,10 @@
+Coloca aquí las imágenes de los estados del Elfo Gruñón (día 23).
+
+Nombres de archivo esperados (uno por estado):
+- grunon.png      (o .jpg, .jpeg, .webp, .svg)  -> estado 0-30% / gruñón
+- dudoso.png      (o .jpg, .jpeg, .webp, .svg)  -> estado 31-65% / dudoso
+- conmovido.png   (o .jpg, .jpeg, .webp, .svg)  -> estado 66-99% / conmovido
+- rendido.png     (o .jpg, .jpeg, .webp, .svg)  -> estado 100% / rendido
+
+Si no hay imagen para un estado, se mostrará el emoji por defecto.
+Recomendación: imágenes cuadradas o recortadas, fondo transparente (PNG/SVG) si es posible.

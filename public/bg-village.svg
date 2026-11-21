@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMax slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#07111f"/>
+      <stop offset="50%" stop-color="#10243d"/>
+      <stop offset="100%" stop-color="#1b2f3a"/>
+    </linearGradient>
+    <linearGradient id="snow1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e8f1f8"/>
+      <stop offset="100%" stop-color="#c9d9e8"/>
+    </linearGradient>
+    <linearGradient id="snow2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f5f9fd"/>
+      <stop offset="100%" stop-color="#ddeaf6"/>
+    </linearGradient>
+    <radialGradient id="moon" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff7d6"/>
+      <stop offset="60%" stop-color="#ffe9a8"/>
+      <stop offset="100%" stop-color="rgba(255,233,168,0)"/>
+    </radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="800" fill="url(#sky)"/>
+
+  <!-- stars -->
+  <g fill="#fff">
+    <circle cx="60" cy="40" r="1.5" opacity="0.9"/><circle cx="140" cy="90" r="1" opacity="0.7"/>
+    <circle cx="220" cy="30" r="1.2" opacity="0.8"/><circle cx="310" cy="70" r="1" opacity="0.6"/>
+    <circle cx="420" cy="35" r="1.6" opacity="0.9"/><circle cx="520" cy="85" r="1" opacity="0.7"/>
+    <circle cx="610" cy="25" r="1.3" opacity="0.8"/><circle cx="700" cy="60" r="1" opacity="0.6"/>
+    <circle cx="780" cy="40" r="1.5" opacity="0.9"/><circle cx="860" cy="95" r="1" opacity="0.7"/>
+    <circle cx="940" cy="30" r="1.2" opacity="0.8"/><circle cx="1030" cy="70" r="1" opacity="0.6"/>
+    <circle cx="1120" cy="45" r="1.4" opacity="0.85"/><circle cx="1180" cy="100" r="1" opacity="0.7"/>
+    <circle cx="90" cy="140" r="1" opacity="0.5"/><circle cx="260" cy="120" r="1.2" opacity="0.6"/>
+    <circle cx="480" cy="130" r="1" opacity="0.5"/><circle cx="660" cy="110" r="1.1" opacity="0.6"/>
+    <circle cx="840" cy="140" r="1" opacity="0.5"/><circle cx="990" cy="120" r="1.2" opacity="0.6"/>
+    <circle cx="1150" cy="150" r="1" opacity="0.5"/>
+  </g>
+
+  <!-- moon -->
+  <circle cx="1030" cy="110" r="70" fill="url(#moon)" opacity="0.9"/>
+  <circle cx="1030" cy="110" r="28" fill="#fff7d6" opacity="0.95"/>
+
+  <!-- far hills -->
+  <path d="M0,520 C150,460 300,500 450,470 C600,440 750,490 900,455 C1050,420 1120,450 1200,430 L1200,800 L0,800 Z" fill="#243b4a"/>
+  <path d="M0,560 C180,520 360,560 520,530 C700,500 860,550 1020,520 C1120,500 1160,520 1200,510 L1200,800 L0,800 Z" fill="#2c4652"/>
+
+  <!-- village ground -->
+  <path d="M0,620 C200,590 400,630 600,605 C800,580 1000,625 1200,600 L1200,800 L0,800 Z" fill="url(#snow1)"/>
+  <path d="M0,690 C180,665 380,700 580,675 C780,650 980,690 1200,670 L1200,800 L0,800 Z" fill="url(#snow2)"/>
+
+  <!-- trees back -->
+  <g fill="#1f4d3a">
+    <polygon points="90,640 50,720 130,720"/><polygon points="90,600 55,680 125,680"/><polygon points="90,565 60,640 120,640"/>
+    <polygon points="210,650 170,730 250,730"/><polygon points="210,610 175,690 245,690"/>
+    <polygon points="980,645 940,725 1020,725"/><polygon points="980,605 945,685 1015,685"/><polygon points="980,570 950,645 1010,645"/>
+    <polygon points="1120,655 1085,725 1155,725"/><polygon points="1120,620 1090,690 1150,690"/>
+  </g>
+  <g fill="#eaf4ff" opacity="0.9">
+    <ellipse cx="90" cy="565" rx="18" ry="8"/><ellipse cx="90" cy="600" rx="22" ry="8"/>
+    <ellipse cx="210" cy="610" rx="22" ry="8"/><ellipse cx="980" cy="570" rx="18" ry="8"/>
+    <ellipse cx="980" cy="605" rx="22" ry="8"/><ellipse cx="1120" cy="620" rx="20" ry="8"/>
+  </g>
+
+  <!-- houses -->
+  <!-- house 1 -->
+  <g transform="translate(300,520)">
+    <rect x="0" y="40" width="110" height="90" fill="#6b3a3a"/>
+    <polygon points="-10,40 55,-10 120,40" fill="#5a2f2f"/>
+    <polygon points="-10,40 55,-10 55,5 -10,55" fill="#f3f8fd" opacity="0.95"/>
+    <rect x="18" y="70" width="22" height="22" fill="#ffd97a" filter="url(#glow)"/>
+    <rect x="68" y="70" width="22" height="22" fill="#ffd97a" filter="url(#glow)"/>
+    <rect x="45" y="90" width="20" height="40" fill="#3d2620"/>
+    <rect x="80" y="10" width="12" height="30" fill="#7a4a3a"/>
+    <rect x="76" y="6" width="20" height="8" fill="#f3f8fd"/>
+  </g>
+
+  <!-- church -->
+  <g transform="translate(470,470)">
+    <rect x="10" y="70" width="100" height="110" fill="#7a4b4b"/>
+    <polygon points="0,70 60,20 120,70" fill="#5a3333"/>
+    <rect x="45" y="10" width="30" height="70" fill="#7a4b4b"/>
+    <polygon points="40,10 60,-30 80,10" fill="#4a2a2a"/>
+    <rect x="58" y="-35" width="4" height="20" fill="#d4af37"/>
+    <rect x="50" y="-27" width="20" height="4" fill="#d4af37"/>
+    <rect x="25" y="95" width="18" height="22" fill="#ffd97a" filter="url(#glow)"/>
+    <rect x="77" y="95" width="18" height="22" fill="#ffd97a" filter="url(#glow)"/>
+    <rect x="50" y="120" width="20" height="60" rx="10" fill="#3d2620"/>
+    <circle cx="60" cy="105" r="12" fill="#ffeaa0" filter="url(#glow)" opacity="0.9"/>
+  </g>
+
+  <!-- house 2 -->
+  <g transform="translate(640,530)">
+    <rect x="0" y="35" width="120" height="95" fill="#4a5d4a"/>
+    <polygon points="-10,35 60,-15 130,35" fill="#3a4a3a"/>
+    <polygon points="-10,35 60,-15 60,0 -10,50" fill="#f3f8fd" opacity="0.95"/>
+    <rect x="20" y="65" width="24" height="22" fill="#ffd97a" filter="url(#glow)"/>
+    <rect x="76" y="65" width="24" height="22" fill="#ffd97a" filter="url(#glow)"/>
+    <rect x="50" y="85" width="22" height="45" fill="#3d2620"/>
+  </g>
+
+  <!-- house 3 -->
+  <g transform="translate(800,545)">
+    <rect x="0" y="30" width="95" height="85" fill="#5a4a6a"/>
+    <polygon points="-8,30 47,-10 102,30" fill="#463858"/>
+    <polygon points="-8,30 47,-10 47,5 -8,45" fill="#f3f8fd" opacity="0.95"/>
+    <rect x="16" y="55" width="20" height="20" fill="#ffd97a" filter="url(#glow)"/>
+    <rect x="58" y="55" width="20" height="20" fill="#ffd97a" filter="url(#glow)"/>
+    <rect x="38" y="75" width="18" height="40" fill="#3d2620"/>
+  </g>
+
+  <!-- front trees -->
+  <g>
+    <g transform="translate(160,560)">
+      <rect x="-6" y="80" width="12" height="35" fill="#6b4a2e"/>
+      <polygon points="0,0 -45,80 45,80" fill="#1f5a3a"/>
+      <polygon points="0,-30 -38,45 38,45" fill="#256a45"/>
+      <polygon points="0,-55 -28,15 28,15" fill="#2e7d52"/>
+      <circle cx="0" cy="-55" r="5" fill="#ffd97a" filter="url(#glow)"/>
+    </g>
+    <g transform="translate(1050,575)">
+      <rect x="-6" y="70" width="12" height="35" fill="#6b4a2e"/>
+      <polygon points="0,5 -40,70 40,70" fill="#1f5a3a"/>
+      <polygon points="0,-25 -33,35 33,35" fill="#256a45"/>
+      <polygon points="0,-48 -24,8 24,8" fill="#2e7d52"/>
+      <circle cx="0" cy="-48" r="5" fill="#ffd97a" filter="url(#glow)"/>
+    </g>
+  </g>
+
+  <!-- string lights suggestion -->
+  <path d="M280,560 Q400,590 520,555 Q640,520 760,555 Q880,590 1000,560" fill="none" stroke="#3a5a3a" stroke-width="2"/>
+  <g filter="url(#glow)">
+    <circle cx="320" cy="570" r="4" fill="#ff6b6b"/><circle cx="380" cy="585" r="4" fill="#ffd97a"/>
+    <circle cx="440" cy="580" r="4" fill="#7ed957"/><circle cx="500" cy="565" r="4" fill="#64b5f6"/>
+    <circle cx="560" cy="545" r="4" fill="#ff6b6b"/><circle cx="620" cy="535" r="4" fill="#ffd97a"/>
+    <circle cx="680" cy="538" r="4" fill="#7ed957"/><circle cx="740" cy="548" r="4" fill="#64b5f6"/>
+    <circle cx="800" cy="565" r="4" fill="#ff6b6b"/><circle cx="860" cy="582" r="4" fill="#ffd97a"/>
+    <circle cx="920" cy="578" r="4" fill="#7ed957"/><circle cx="980" cy="565" r="4" fill="#64b5f6"/>
+  </g>
+
+  <!-- foreground snow bank overlay hint -->
+  <ellipse cx="200" cy="800" rx="260" ry="60" fill="#f7fbff" opacity="0.35"/>
+  <ellipse cx="1000" cy="800" rx="280" ry="65" fill="#f7fbff" opacity="0.3"/>
+</svg>

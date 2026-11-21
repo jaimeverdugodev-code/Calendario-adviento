@@ -1,0 +1,14 @@
+Coloca aquí la imagen de la escena tipo "Buscando a Wally" (día 20).
+
+- Nombre recomendado: escena.jpg (también se intentan escena.png, escena.webp, wally.jpg, wally.png).
+- Después, configura la posición del objetivo en js/diasData.js (día 20, gameConfig):
+    gameConfig: {
+      scene: "public/wally/escena.jpg",
+      target: { xPct: 0.62, yPct: 0.48, rPct: 0.08 },
+      hint: "Busca y toca a..."
+    }
+  - xPct, yPct: centro del objetivo (0 a 1, relativo a la imagen).
+  - rPct: radio/tolerancia del toque (0 a 1, relativo al lado menor de la imagen).
+  - hint: texto de pista que se muestra en el juego.
+
+Ajusta target hasta que el toque coincida bien con el personaje/objeto escondido.

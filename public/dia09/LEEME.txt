@@ -1,0 +1,8 @@
+Coloca aquí el sonido que se reproducirá cada vez que "aplastes/atrapes" un elfo en el minijuego "¡Atrapa al Elfo!" (día 9).
+
+Nombres de archivo reconocidos (usa uno de estos):
+- aplastar.mp3 / .ogg / .wav
+- golpe.mp3 / .ogg / .wav
+- sonido.mp3 / .ogg / .wav
+
+Formatos recomendados: MP3 u OGG (según navegador). Si no hay archivo, el juego funcionará sin ese sonido adicional.

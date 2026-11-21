@@ -1,0 +1,8 @@
+Coloca aquí la imagen que reemplazará a los corazones/besos que caen en el minijuego "Lluvia de Besos" (día 6).
+
+Nombres de archivo reconocidos (usa uno de estos):
+- corazon.png / .jpg / .jpeg / .webp / .svg
+- beso.png / .jpg / .jpeg / .webp / .svg
+- imagen.png / .jpg / .jpeg / .webp / .svg
+
+Recomendación: imagen cuadrada y, si es posible, con fondo transparente (PNG o SVG) para que se vea mejor al caer. Si no hay imagen, se mostrará el corazón por defecto.

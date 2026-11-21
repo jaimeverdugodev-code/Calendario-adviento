@@ -1,0 +1,9 @@
+# Secretos / configuración local
+.env
+.env.*
+
+# SO / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
