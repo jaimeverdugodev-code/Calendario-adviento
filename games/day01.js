@@ -25,12 +25,12 @@ export function startGame(container, config, onWin) {
 
   const bird = { x: W * 0.28, y: H * 0.45, r: 18, vy: 0 };
   // Física ajustada para sentirse igual en móvil/desktop (independiente de FPS)
-  const gravity = 0.22;
+  const gravity = 2;
   const flap = -5.4;
   const pipes = [];
   const gap = 190;
-  const pipeW = 54;
-  const speed = 3.2;
+  const pipeW = 40;
+  const speed = 4;
   const spawnInterval = 105 * (1000 / 60);
 
   function reset(full = true) {
