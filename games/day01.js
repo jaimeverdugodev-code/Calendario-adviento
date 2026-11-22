@@ -28,8 +28,8 @@ export function startGame(container, config, onWin) {
   const gravity = 0.32;
   const flap = -6.0;
   const pipes = [];
-  const baseGap = 190;
-  const minGap = 85;
+  const baseGap = 220;
+  const minGap = 140;
   const pipeW = 40;
   const speed = 4;
   const spawnInterval = 105 * (1000 / 60);
@@ -47,7 +47,7 @@ export function startGame(container, config, onWin) {
 
   function spawnPipe() {
     const margin = 70;
-    const gap = Math.max(minGap, baseGap - score * 12);
+    const gap = Math.max(minGap, baseGap - score * 8);
     const topH = margin + Math.random() * (H - gap - margin * 2 - 20);
     pipes.push({ x: W + 20, top: topH, gap, passed: false });
   }
