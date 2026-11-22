@@ -39,11 +39,12 @@ function init() {
   // arrancar música con la primera interacción del usuario (política de autoplay)
   const unlockOnce = () => {
     unlockAudio();
-    tryStartMusic();
     window.removeEventListener('pointerdown', unlockOnce);
+    window.removeEventListener('touchstart', unlockOnce);
     window.removeEventListener('keydown', unlockOnce);
   };
   window.addEventListener('pointerdown', unlockOnce, { passive: true });
+  window.addEventListener('touchstart', unlockOnce, { passive: true });
   window.addEventListener('keydown', unlockOnce);
 
   if (isAdminMode()) {

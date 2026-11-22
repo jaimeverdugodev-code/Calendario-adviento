@@ -1,5 +1,6 @@
 // Audio: música de fondo (pista del usuario o melodía sintetizada) y efectos (Web Audio API)
 let ctx = null;
+let synthGain = null;
 let musicEnabled = (typeof localStorage !== 'undefined' && localStorage.getItem('adviento-music') === 'off') ? false : true;
 let musicPlaying = false;
 let musicSource = null; // 'track' | 'synth' | null
@@ -29,14 +30,27 @@ export function getCtx() {
     const C = AC();
     if (C) ctx = new C();
   }
+  if (ctx && !synthGain) {
+    synthGain = ctx.createGain();
+    synthGain.gain.value = 1;
+    synthGain.connect(ctx.destination);
+  }
   return ctx;
 }
 
 export function unlockAudio() {
   const c = getCtx();
   if (c && c.state === 'suspended') c.resume().catch(() => {});
+  if (!musicEnabled) return c;
+
+  // En móvil, el primer play debe ocurrir dentro del gesto del usuario.
+  if (!musicPlaying) {
+    startMusic();
+    return c;
+  }
+
   // Si hay pista del usuario, intenta (re)producirla en contexto de interacción
-  if (bgTrack && trackAvailable && musicEnabled && musicPlaying) {
+  if (bgTrack && trackAvailable) {
     if (bgTrack.paused) {
       bgTrack.play().then(() => {
         if (musicPlaying && musicEnabled) {
@@ -153,6 +167,16 @@ export function sfx(type = 'tap') {
   }
 }
 
+function playTrackBg() {
+  if (!bgTrack) return Promise.resolve(false);
+  try { bgTrack.pause(); bgTrack.currentTime = 0; } catch (e) {}
+  return bgTrack.play().then(() => {
+    musicSource = 'track';
+    stopSynthLoop();
+    return true;
+  }).catch(() => false);
+}
+
 // --- Música de fondo sintetizada (fallback) ---
 const N = { C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392,A4:440,B4:493.88,C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99, R:0 };
 const MELODY = [
@@ -191,8 +215,8 @@ function scheduleMusicLoop(loopId) {
       g2.gain.setValueAtTime(0.0001, t);
       g2.gain.linearRampToValueAtTime(0.004, t + 0.02);
       g2.gain.exponentialRampToValueAtTime(0.0001, t + dur * 0.7);
-      o.connect(g); g.connect(c.destination);
-      o2.connect(g2); g2.connect(c.destination);
+      o.connect(g); g.connect(synthGain || c.destination);
+      o2.connect(g2); g2.connect(synthGain || c.destination);
       o.start(t); o.stop(t + dur);
       o2.start(t); o2.stop(t + dur);
     }
@@ -219,17 +243,6 @@ export function startMusic() {
   if (musicPlaying) return;
   musicPlaying = true;
 
-  const playTrack = () => {
-    if (!musicPlaying || !musicEnabled) return;
-    stopSynthLoop();
-    const p = bgTrack.play();
-    if (p && typeof p.then === 'function') {
-      p.then(() => { if (musicPlaying && musicEnabled) musicSource = 'track'; }).catch(() => { musicSource = 'synth'; startSynthLoop(); });
-    } else {
-      musicSource = 'track';
-    }
-  };
-
   const playSynth = () => {
     if (!musicPlaying || !musicEnabled) return;
     musicSource = 'synth';
@@ -237,21 +250,24 @@ export function startMusic() {
   };
 
   if (trackSettled) {
-    if (trackAvailable && bgTrack) playTrack();
-    else playSynth();
+    if (trackAvailable && bgTrack) {
+      playTrackBg().then((ok) => { if (!ok) playSynth(); });
+    } else {
+      playSynth();
+    }
     return;
   }
 
-  // Pista aún sin resolver: arranca synth para que suene ya y cambia a pista si aparece
-  playSynth();
+  // Si la pista aún no está resuelta, espera un poco antes de arrancar synth.
+  // Evita el doble audio cuando la pista existe pero tarda en cargar.
   ensureTrack().then((ok) => {
     if (!musicPlaying || !musicEnabled) return;
     if (ok && bgTrack) {
-      musicSource = 'track';
-      stopSynthLoop();
-      bgTrack.play().catch(() => { musicSource = 'synth'; startSynthLoop(); });
+      playTrackBg().then((played) => { if (!played) playSynth(); });
+    } else {
+      playSynth();
     }
-  }).catch(() => {});
+  }).catch(() => { if (musicPlaying && musicEnabled) playSynth(); });
 }
 
 export function stopMusic() {
