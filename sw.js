@@ -1,4 +1,4 @@
-const CACHE_NAME = 'adviento-v14';
+const CACHE_NAME = 'adviento-v15';
 const ASSETS = [
   './',
   './index.html',
@@ -13,6 +13,9 @@ const ASSETS = [
   './js/avatars.js',
   './manifest.json',
   './icons/icon.svg',
+  './icons/apple-touch-icon.png',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
   './public/avatars/yo1.png',
   './public/avatars/yo2.png',
   './public/avatars/yo3.png',
@@ -46,7 +49,9 @@ const ASSETS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.allSettled(ASSETS.map((asset) => cache.add(asset)))
+    ).then(() => self.skipWaiting())
   );
 });
 
