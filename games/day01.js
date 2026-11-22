@@ -25,10 +25,11 @@ export function startGame(container, config, onWin) {
 
   const bird = { x: W * 0.28, y: H * 0.45, r: 18, vy: 0 };
   // Física ajustada para sentirse igual en móvil/desktop (independiente de FPS)
-  const gravity = 2;
-  const flap = -5.4;
+  const gravity = 0.12;
+  const flap = -4.2;
   const pipes = [];
-  const gap = 190;
+  const baseGap = 190;
+  const minGap = 115;
   const pipeW = 40;
   const speed = 4;
   const spawnInterval = 105 * (1000 / 60);
@@ -46,8 +47,9 @@ export function startGame(container, config, onWin) {
 
   function spawnPipe() {
     const margin = 70;
+    const gap = Math.max(minGap, baseGap - score * 7);
     const topH = margin + Math.random() * (H - gap - margin * 2 - 20);
-    pipes.push({ x: W + 20, top: topH, passed: false });
+    pipes.push({ x: W + 20, top: topH, gap, passed: false });
   }
 
   function drawBackground() {
@@ -170,7 +172,8 @@ export function startGame(container, config, onWin) {
     for (const p of pipes) {
       const inX = bird.x + bird.r > p.x && bird.x - bird.r < p.x + pipeW;
       if (!inX) continue;
-      if (bird.y - bird.r < p.top || bird.y + bird.r > p.top + gap) return true;
+      const pGap = p.gap || baseGap;
+      if (bird.y - bird.r < p.top || bird.y + bird.r > p.top + pGap) return true;
     }
     return false;
   }
@@ -228,8 +231,9 @@ export function startGame(container, config, onWin) {
 
   function drawPipes() {
     for (const p of pipes) {
+      const pGap = p.gap || baseGap;
       drawCandyCane(p.x, 0, pipeW, p.top, false);
-      const bottomY = p.top + gap;
+      const bottomY = p.top + pGap;
       drawCandyCane(p.x, bottomY, pipeW, H - 28 - bottomY, true);
     }
   }
