@@ -45,7 +45,7 @@ export const DIAS = [
     day: 4,
     title: "Infla el Corazón",
     gameId: "day04",
-    gameConfig: { durationMs: 10000, targetTaps: 100 },
+    gameConfig: { durationMs: 10000, targetTaps: 150 },
     photo: "public/fotos/dia04.svg",
     message: "Mi corazón late más fuerte cuando estás cerca."
   },
@@ -155,9 +155,9 @@ export const DIAS = [
   },
   {
     day: 18,
-    title: "Mini Sopa de Letras",
+    title: "Sopa de Letras",
     gameId: "day18",
-    gameConfig: { words: ["AMOR", "BESO", "NIEVE"] },
+    gameConfig: { size: 10, words: ["AMOR", "BESO", "NIEVE", "CHICHARRON", "NAVIDAD"] },
     photo: "public/fotos/dia18.svg",
     message: "En cualquier sopa de letras te encontraría."
   },

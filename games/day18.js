@@ -1,8 +1,8 @@
-// Día 18: Mini Sopa de Letras 6x6 - marcar 3 palabras
+// Día 18: Sopa de Letras - marcar palabras
 export function startGame(container, config, onWin) {
-  const words = (config.gameConfig && config.gameConfig.words) || ["AMOR","BESO","NIEVE"];
-  const size = 6;
-  const letters = 'ABCDEFGHIJKLMNÑOPRSTUV';
+  const words = (config.gameConfig && config.gameConfig.words) || ["AMOR","BESO","NIEVE","CHICHARRON","NAVIDAD"];
+  const size = (config.gameConfig && config.gameConfig.size) || 10;
+  const letters = 'ABCDEFGHIJKLMNÑOPRSTUVWXYZ';
   let grid = Array.from({length:size}, ()=>Array(size).fill(''));
   let placements = []; // {word, cells:[{r,c}]}
   let found = new Set();
@@ -48,7 +48,7 @@ export function startGame(container, config, onWin) {
   root.appendChild(info);
 
   const board = document.createElement('div');
-  board.style.cssText = `display:grid;grid-template-columns:repeat(${size},1fr);gap:4px;width:min(92vw,${Math.min(container.clientHeight||360,340)-40}px);aspect-ratio:1/1;touch-action:none;`;
+  board.style.cssText = `display:grid;grid-template-columns:repeat(${size},1fr);gap:3px;width:min(94vw,${Math.min(container.clientHeight||420,400)-30}px);aspect-ratio:1/1;touch-action:none;`;
   root.appendChild(board);
 
   const status = document.createElement('div');
@@ -69,7 +69,8 @@ export function startGame(container, config, onWin) {
       let bg = 'rgba(253,248,245,0.12)';
       if (fw) bg = 'rgba(46,125,50,0.55)';
       else if (sel) bg = 'rgba(212,175,55,0.5)';
-      el.style.cssText = `display:flex;align-items:center;justify-content:center;border-radius:8px;background:${bg};color:#fff;font-weight:700;font-size:1.05rem;user-select:none;border:1px solid rgba(212,175,55,0.25);`;
+      const fontSize = size >= 10 ? '0.72rem' : '1.05rem';
+      el.style.cssText = `display:flex;align-items:center;justify-content:center;border-radius:6px;background:${bg};color:#fff;font-weight:700;font-size:${fontSize};user-select:none;border:1px solid rgba(212,175,55,0.25);`;
       el.textContent = grid[r][c];
       el.dataset.r = r; el.dataset.c = c;
       board.appendChild(el);

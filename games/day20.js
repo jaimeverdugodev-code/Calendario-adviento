@@ -1,4 +1,4 @@
-// Día 20: Cupido al Blanco - dispara flechas a corazones en movimiento
+// Día 20: Cupido al Blanco - un corazón a la vez, 10 aciertos, 3 vidas
 import { sfx } from '../js/audio.js';
 import { getMyAvatarForDay } from '../js/avatars.js';
 
@@ -15,32 +15,36 @@ export function startGame(container, config, onWin) {
   const avatar = new Image();
   avatar.src = getMyAvatarForDay(config.day);
 
-  let running = true, won = false;
+  let running = true, won = false, ended = false;
   let score = 0;
+  let lives = 3;
+  let spawned = 0;
   let raf;
   let lastTime = 0;
-  let spawnTimer = 0;
   const arrows = []; // {x,y,vx,vy}
-  const targets = []; // {x,y,r,vx,vy,life}
-  const pops = []; // {x,y,t}
+  const targets = []; // {x,y,r,vx,vy}
+  const pops = []; // {x,y,t,text}
 
   function spawnTarget() {
-    if (targets.length >= 4) return;
-    const r = 18 + Math.random() * 8;
+    if (ended || won) return;
+    if (targets.length >= 1) return;
+    if (spawned >= targetHits) return;
+    const r = 18 + Math.random() * 6;
     const side = Math.random() < 0.5 ? -1 : 1;
-    const y = 60 + Math.random() * (H * 0.45);
+    const y = 65 + Math.random() * (H * 0.42);
+    const speed = 1.7 + spawned * 0.22; // progresivo, controlado
     targets.push({
-      x: side < 0 ? -r - 10 : W + r + 10,
+      x: side < 0 ? -r - 12 : W + r + 12,
       y,
       r,
-      vx: (1.2 + Math.random() * 1.4) * -side,
-      vy: (Math.random() - 0.5) * 0.5,
-      life: 1
+      vx: speed * -side,
+      vy: (Math.random() - 0.5) * 0.45
     });
+    spawned += 1;
   }
 
   function shoot(tx, ty) {
-    if (won) return;
+    if (won || ended) return;
     const origin = { x: W / 2, y: H - 38 };
     const dx = tx - origin.x;
     const dy = ty - origin.y;
@@ -110,7 +114,7 @@ export function startGame(container, config, onWin) {
       ctx.fillStyle = '#f2c6ce';
       ctx.font = 'bold 16px "Plus Jakarta Sans",sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('+1', p.x, p.y);
+      ctx.fillText(p.text || '+1', p.x, p.y);
       ctx.globalAlpha = 1;
     }
 
@@ -131,18 +135,18 @@ export function startGame(container, config, onWin) {
 
     // HUD
     ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(8, 8, W - 16, 36);
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 15px "Plus Jakarta Sans",sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 14px "Plus Jakarta Sans",sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     ctx.fillText(`Dianas: ${score}/${targetHits}`, 16, 26);
     ctx.textAlign = 'right'; ctx.fillStyle = '#f2c6ce';
-    ctx.fillText('Toca para disparar', W - 16, 26);
+    ctx.fillText('❤'.repeat(Math.max(0, lives)) + '♡'.repeat(Math.max(0, 3 - lives)), W - 16, 26);
 
-    if (won) {
+    if (won || ended) {
       ctx.fillStyle = 'rgba(27,13,18,0.65)';
       ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = '#d4af37'; ctx.font = 'bold 30px "Playfair Display",serif'; ctx.textAlign = 'center';
-      ctx.fillText('¡Puntería perfecta!', W/2, H/2 - 6);
+      ctx.fillText(won ? '¡Puntería perfecta!' : '¡Te quedaste sin vidas!', W/2, H/2 - 6);
       ctx.fillStyle = '#f2c6ce'; ctx.font = '16px "Plus Jakarta Sans",sans-serif';
-      ctx.fillText('Cupido estaría orgulloso', W/2, H/2 + 24);
+      ctx.fillText(won ? 'Cupido estaría orgulloso' : 'Pulsa reintentar', W/2, H/2 + 24);
     }
   }
 
@@ -151,13 +155,7 @@ export function startGame(container, config, onWin) {
     const dt = lastTime ? Math.min((time - lastTime) / (1000 / 60), 2) : 1;
     lastTime = time;
 
-    if (!won) {
-      spawnTimer += dt * (1000 / 60);
-      if (spawnTimer > 700) {
-        spawnTarget();
-        spawnTimer = 0;
-      }
-
+    if (!won && !ended) {
       for (let i = arrows.length - 1; i >= 0; i--) {
         const a = arrows[i];
         a.x += a.vx * dt;
@@ -172,10 +170,20 @@ export function startGame(container, config, onWin) {
         t.x += t.vx * dt;
         t.y += t.vy * dt;
         if (t.y < 40 || t.y > H * 0.65) t.vy *= -1;
+        // Si el corazón se escapa, pierdes vida
         if ((t.vx > 0 && t.x - t.r > W + 30) || (t.vx < 0 && t.x + t.r < -30)) {
           targets.splice(i, 1);
+          lives = Math.max(0, lives - 1);
+          pops.push({ x: W / 2, y: H / 2, t: 24, text: '-1 ❤' });
+          try { sfx('fail'); } catch (e) {}
+          if (lives <= 0) {
+            ended = true;
+            break;
+          }
+          spawnTarget();
           continue;
         }
+
         for (let j = arrows.length - 1; j >= 0; j--) {
           const a = arrows[j];
           const dx = a.x - t.x, dy = a.y - t.y;
@@ -183,16 +191,20 @@ export function startGame(container, config, onWin) {
             targets.splice(i, 1);
             arrows.splice(j, 1);
             score++;
-            pops.push({ x: t.x, y: t.y, t: 20 });
+            pops.push({ x: t.x, y: t.y, t: 20, text: '+1' });
             try { sfx('score'); } catch (e) {}
             if (score >= targetHits) {
               won = true;
               setTimeout(() => onWin && onWin(), 900);
+            } else {
+              spawnTarget();
             }
             break;
           }
         }
       }
+
+      if (!won && !ended && targets.length === 0 && spawned < targetHits) spawnTarget();
 
       for (let i = pops.length - 1; i >= 0; i--) {
         pops[i].y -= 0.6 * dt;
@@ -216,7 +228,6 @@ export function startGame(container, config, onWin) {
     shoot(p.x, p.y);
   });
 
-  spawnTarget();
   spawnTarget();
   raf = requestAnimationFrame(update);
   return () => { running = false; cancelAnimationFrame(raf); };

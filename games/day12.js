@@ -16,6 +16,7 @@ export function startGame(container, config, onWin) {
 
   let running = true, ended = false, won = false, raf;
   let score = 0;
+  let lives = 3;
   let boatX = W / 2;
   let boatDir = 1;
   const boatY = 70;
@@ -156,9 +157,12 @@ export function startGame(container, config, onWin) {
     ctx.restore();
 
     // HUD
-    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(8, 8, 170, 34);
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 16px "Plus Jakarta Sans",sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(8, 8, W - 16, 34);
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 15px "Plus Jakarta Sans",sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     ctx.fillText(`Tesoros: ${score}/${target}`, 16, 25);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#f2c6ce';
+    ctx.fillText('❤'.repeat(Math.max(0, lives)) + '♡'.repeat(Math.max(0, 3 - lives)), W - 16, 25);
 
     if (!ended) {
       ctx.fillStyle = 'rgba(253,248,245,0.9)'; ctx.font = '14px "Plus Jakarta Sans",sans-serif'; ctx.textAlign = 'center';
@@ -168,7 +172,11 @@ export function startGame(container, config, onWin) {
     if (ended) {
       ctx.fillStyle = 'rgba(27,13,18,0.65)'; ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = '#d4af37'; ctx.font = 'bold 28px "Playfair Display",serif'; ctx.textAlign = 'center';
-      ctx.fillText(won ? '¡Pesca perfecta!' : '¡Buen intento!', W / 2, H / 2);
+      ctx.fillText(won ? '¡Pesca perfecta!' : (lives <= 0 ? '¡Te quedaste sin vidas!' : '¡Buen intento!'), W / 2, H / 2);
+      if (!won && lives <= 0) {
+        ctx.fillStyle = '#f2c6ce'; ctx.font = '16px "Plus Jakarta Sans",sans-serif';
+        ctx.fillText('Pulsa reintentar', W / 2, H / 2 + 28);
+      }
     }
   }
 
@@ -233,8 +241,15 @@ export function startGame(container, config, onWin) {
                 return;
               }
             } else {
-              // mal objeto: solo sonido suave, sin penalización dura
+              lives = Math.max(0, lives - 1);
               try { sfx('fail'); } catch (e) {}
+              if (lives <= 0) {
+                ended = true; won = false;
+                resetHook();
+                draw();
+                running = false;
+                return;
+              }
             }
           }
           // respawn a treasure to keep pool

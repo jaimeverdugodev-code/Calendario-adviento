@@ -10,12 +10,22 @@ export function startGame(container, config, onWin) {
   const ctx = canvas.getContext('2d');
   if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
 
-  const joyWrap = document.createElement('div');
-  joyWrap.style.cssText = 'position:absolute;left:14px;bottom:14px;width:96px;height:96px;border-radius:50%;background:rgba(253,248,245,0.12);border:2px solid rgba(212,175,55,0.45);touch-action:none;z-index:5;user-select:none;';
-  const joyKnob = document.createElement('div');
-  joyKnob.style.cssText = 'position:absolute;left:50%;top:50%;width:44px;height:44px;margin-left:-22px;margin-top:-22px;border-radius:50%;background:rgba(212,175,55,0.85);border:2px solid #f2c6ce;box-shadow:0 2px 8px rgba(0,0,0,0.35);transform:translate(0px,0px);pointer-events:none;';
-  joyWrap.appendChild(joyKnob);
-  container.appendChild(joyWrap);
+  const dpad = document.createElement('div');
+  dpad.style.cssText = 'position:absolute;left:12px;bottom:12px;width:120px;height:120px;z-index:5;touch-action:none;user-select:none;';
+  const mkBtn = (dir, label, css) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.dir = dir;
+    b.textContent = label;
+    b.style.cssText = `position:absolute;width:40px;height:40px;border-radius:10px;border:2px solid rgba(212,175,55,0.55);background:rgba(253,248,245,0.14);color:#fff;font-size:20px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;${css}`;
+    dpad.appendChild(b);
+    return b;
+  };
+  mkBtn('up', '▲', 'left:40px;top:0;');
+  mkBtn('left', '◀', 'left:0;top:40px;');
+  mkBtn('right', '▶', 'left:80px;top:40px;');
+  mkBtn('down', '▼', 'left:40px;top:80px;');
+  container.appendChild(dpad);
 
   const meImg = new Image(); meImg.src = getMyAvatarForDay(config.day);
   const youImg = new Image(); youImg.src = 'public/avatars/pareja.png';
@@ -43,16 +53,14 @@ export function startGame(container, config, onWin) {
 
   const start = { r: 1, c: 1 };
   const goal = { r: 11, c: 9 };
-  const playerR = Math.min(cellW, cellH) * 0.32;
+  const playerR = Math.min(cellW, cellH) * 0.26;
   let player = { x: pad + (start.c + 0.5)*cellW, y: pad + (start.r + 0.5)*cellH };
   const goalPos = { x: pad + (goal.c + 0.5)*cellW, y: pad + (goal.r + 0.5)*cellH };
   let won = false;
   let lostFlash = 0;
   let raf;
-  let joyActive = false;
-  let joyVec = { x: 0, y: 0 };
-  const joyRadius = 34;
-  const moveSpeed = 1.9;
+  const moveState = { up: false, down: false, left: false, right: false };
+  const moveSpeed = 1.7;
 
   function isWallAt(px, py) {
     // sample a few points around player circle
@@ -111,7 +119,7 @@ export function startGame(container, config, onWin) {
     // hint
     ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.fillRect(8,8,W-16,30);
     ctx.fillStyle='#fff'; ctx.font='bold 14px "Plus Jakarta Sans",sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(won ? '¡Nos encontramos! ❤' : 'Usa el joystick para llegar a mi amor', W/2, 23);
+    ctx.fillText(won ? '¡Nos encontramos! ❤' : 'Usa las flechas para llegar a mi amor', W/2, 23);
   }
 
   function tryMoveBy(dx, dy) {
@@ -134,51 +142,53 @@ export function startGame(container, config, onWin) {
     }
   }
 
-  function setJoyFromEvent(e) {
-    const r = joyWrap.getBoundingClientRect();
-    const cx = r.left + r.width / 2;
-    const cy = r.top + r.height / 2;
-    let dx = e.clientX - cx;
-    let dy = e.clientY - cy;
-    const dist = Math.hypot(dx, dy) || 1;
-    const clamped = Math.min(dist, joyRadius);
-    dx = (dx / dist) * clamped;
-    dy = (dy / dist) * clamped;
-    joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
-    joyVec = { x: dx / joyRadius, y: dy / joyRadius };
-  }
+  const setDir = (dir, active) => { if (dir in moveState) moveState[dir] = active; };
+  const resetMove = () => { moveState.up = moveState.down = moveState.left = moveState.right = false; };
 
-  function resetJoy() {
-    joyActive = false;
-    joyVec = { x: 0, y: 0 };
-    joyKnob.style.transform = 'translate(0px, 0px)';
-  }
-
-  const onJoyDown = (e) => {
+  const onPadDown = (e) => {
     e.preventDefault();
-    joyActive = true;
-    joyWrap.setPointerCapture && joyWrap.setPointerCapture(e.pointerId);
-    setJoyFromEvent(e);
+    const dir = e.currentTarget.dataset.dir;
+    setDir(dir, true);
+    e.currentTarget.setPointerCapture && e.currentTarget.setPointerCapture(e.pointerId);
   };
-  const onJoyMove = (e) => {
-    if (!joyActive) return;
-    e.preventDefault();
-    setJoyFromEvent(e);
+  const onPadUp = (e) => {
+    const dir = e.currentTarget && e.currentTarget.dataset ? e.currentTarget.dataset.dir : null;
+    if (dir) setDir(dir, false);
   };
-  const onJoyUp = (e) => {
-    if (joyWrap.releasePointerCapture) { try { joyWrap.releasePointerCapture(e.pointerId); } catch (_) {} }
-    resetJoy();
-  };
+  dpad.querySelectorAll('button').forEach((b) => {
+    b.addEventListener('pointerdown', onPadDown);
+    b.addEventListener('pointerup', onPadUp);
+    b.addEventListener('pointercancel', onPadUp);
+    b.addEventListener('pointerleave', onPadUp);
+  });
 
-  joyWrap.addEventListener('pointerdown', onJoyDown);
-  joyWrap.addEventListener('pointermove', onJoyMove);
-  joyWrap.addEventListener('pointerup', onJoyUp);
-  joyWrap.addEventListener('pointercancel', onJoyUp);
+  const onKeyDown = (e) => {
+    if (e.key === 'ArrowUp') moveState.up = true;
+    if (e.key === 'ArrowDown') moveState.down = true;
+    if (e.key === 'ArrowLeft') moveState.left = true;
+    if (e.key === 'ArrowRight') moveState.right = true;
+  };
+  const onKeyUp = (e) => {
+    if (e.key === 'ArrowUp') moveState.up = false;
+    if (e.key === 'ArrowDown') moveState.down = false;
+    if (e.key === 'ArrowLeft') moveState.left = false;
+    if (e.key === 'ArrowRight') moveState.right = false;
+  };
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
 
   function loop() {
     if (lostFlash > 0) lostFlash--;
-    if (!won && (joyVec.x || joyVec.y)) {
-      tryMoveBy(joyVec.x * moveSpeed, joyVec.y * moveSpeed);
+    if (!won) {
+      let dx = 0, dy = 0;
+      if (moveState.left) dx -= 1;
+      if (moveState.right) dx += 1;
+      if (moveState.up) dy -= 1;
+      if (moveState.down) dy += 1;
+      if (dx || dy) {
+        const len = Math.hypot(dx, dy) || 1;
+        tryMoveBy((dx / len) * moveSpeed, (dy / len) * moveSpeed);
+      }
     }
     draw();
     raf = requestAnimationFrame(loop);
@@ -186,10 +196,14 @@ export function startGame(container, config, onWin) {
   loop();
   return ()=>{
     cancelAnimationFrame(raf);
-    joyWrap.removeEventListener('pointerdown', onJoyDown);
-    joyWrap.removeEventListener('pointermove', onJoyMove);
-    joyWrap.removeEventListener('pointerup', onJoyUp);
-    joyWrap.removeEventListener('pointercancel', onJoyUp);
-    joyWrap.remove();
+    dpad.querySelectorAll('button').forEach((b) => {
+      b.removeEventListener('pointerdown', onPadDown);
+      b.removeEventListener('pointerup', onPadUp);
+      b.removeEventListener('pointercancel', onPadUp);
+      b.removeEventListener('pointerleave', onPadUp);
+    });
+    window.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('keyup', onKeyUp);
+    dpad.remove();
   };
 }

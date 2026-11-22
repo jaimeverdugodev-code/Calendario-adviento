@@ -98,7 +98,8 @@ export function startGame(container, config, onWin) {
     if (!running) return;
     if (!won && !lost) {
       const tiltDir = Math.max(-1, Math.min(1, tiltX / 25));
-      const dir = Math.abs(tiltDir) > 0.08 ? tiltDir : keyboardDir;
+      // invertido: inclinar izquierda mueve izquierda en pantalla
+      const dir = Math.abs(tiltDir) > 0.08 ? -tiltDir : keyboardDir;
       player.x += dir * 5.2;
       player.vy += gravity;
       player.y += player.vy;
