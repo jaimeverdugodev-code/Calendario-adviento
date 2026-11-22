@@ -1,8 +1,8 @@
-// Día 19: Salto a las Nubes (Doodle Jump simple) - llegar a la estrella
+// Día 19: Salto a las Nubes - control por inclinación del móvil
 import { getMyAvatarForDay } from '../js/avatars.js';
 
 export function startGame(container, config, onWin) {
-  const targetHeight = (config.gameConfig && config.gameConfig.targetHeight) || 1800;
+  const targetHeight = (config.gameConfig && config.gameConfig.targetHeight) || 4200;
   const W = container.clientWidth || 360;
   const H = container.clientHeight || 420;
   const canvas = document.createElement('canvas');
@@ -14,8 +14,9 @@ export function startGame(container, config, onWin) {
   let running = true, won = false, lost = false, raf;
   let cameraY = 0;
   let maxHeight = 0;
-  let moveDir = 0; // -1 left, 1 right
-  let pointerActive = false;
+  let tiltX = 0; // gamma/acceleration-based
+  let tiltActive = false;
+  let keyboardDir = 0;
 
   const player = { x: W/2, y: H-80, w: 36, h: 36, vy: -10 };
   const gravity = 0.35;
@@ -96,7 +97,9 @@ export function startGame(container, config, onWin) {
   function update() {
     if (!running) return;
     if (!won && !lost) {
-      if (pointerActive) player.x += moveDir * 4.2;
+      const tiltDir = Math.max(-1, Math.min(1, tiltX / 25));
+      const dir = Math.abs(tiltDir) > 0.08 ? tiltDir : keyboardDir;
+      player.x += dir * 5.2;
       player.vy += gravity;
       player.y += player.vy;
       if (player.x < -20) player.x = W+20;
@@ -127,15 +130,73 @@ export function startGame(container, config, onWin) {
     raf = requestAnimationFrame(update);
   }
 
-  function setDir(clientX) {
-    const r = canvas.getBoundingClientRect();
-    const x = clientX - r.left;
-    moveDir = x < r.width/2 ? -1 : 1;
+  function onOrientation(e) {
+    if (typeof e.gamma === 'number') {
+      tiltX = e.gamma;
+      tiltActive = true;
+    }
   }
-  canvas.addEventListener('pointerdown', (e)=>{ pointerActive = true; setDir(e.clientX); });
-  canvas.addEventListener('pointermove', (e)=>{ if(pointerActive) setDir(e.clientX); });
-  window.addEventListener('pointerup', ()=>{ pointerActive=false; });
+  function onMotion(e) {
+    const ag = e.accelerationIncludingGravity;
+    if (ag && typeof ag.x === 'number') {
+      // Fallback aproximado para algunos dispositivos
+      tiltX = Math.max(-45, Math.min(45, ag.x * 4.5));
+      tiltActive = true;
+    }
+  }
+  async function requestMotionPermission() {
+    try {
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        const p = await DeviceOrientationEvent.requestPermission();
+        if (p === 'granted') {
+          window.addEventListener('deviceorientation', onOrientation);
+        }
+      } else {
+        window.addEventListener('deviceorientation', onOrientation);
+      }
+      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        const p2 = await DeviceMotionEvent.requestPermission();
+        if (p2 === 'granted') window.addEventListener('devicemotion', onMotion);
+      } else {
+        window.addEventListener('devicemotion', onMotion);
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  const onKeyDown = (e) => {
+    if (e.key === 'ArrowLeft') keyboardDir = -1;
+    if (e.key === 'ArrowRight') keyboardDir = 1;
+  };
+  const onKeyUp = (e) => {
+    if ((e.key === 'ArrowLeft' && keyboardDir === -1) || (e.key === 'ArrowRight' && keyboardDir === 1)) keyboardDir = 0;
+  };
+
+  canvas.addEventListener('pointerdown', requestMotionPermission);
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
+  window.addEventListener('deviceorientation', onOrientation);
+  window.addEventListener('devicemotion', onMotion);
+
+  // hint overlay text via HUD when not tilt
+  const originalDraw = draw;
+  draw = function() {
+    originalDraw();
+    if (!won && !lost && !tiltActive) {
+      ctx.fillStyle = 'rgba(253,248,245,0.85)';
+      ctx.font = '12px "Plus Jakarta Sans",sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Inclina el móvil (o usa ← → en PC)', W/2, H - 12);
+    }
+  };
 
   update();
-  return ()=>{ running=false; cancelAnimationFrame(raf); };
+  return ()=>{
+    running=false;
+    cancelAnimationFrame(raf);
+    canvas.removeEventListener('pointerdown', requestMotionPermission);
+    window.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('keyup', onKeyUp);
+    window.removeEventListener('deviceorientation', onOrientation);
+    window.removeEventListener('devicemotion', onMotion);
+  };
 }

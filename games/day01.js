@@ -19,22 +19,27 @@ export function startGame(container, config, onWin) {
   let ended = false;
   let score = 0;
   let frames = 0;
+  let spawnTimer = 0;
+  let lastTime = 0;
   let raf;
 
   const bird = { x: W * 0.28, y: H * 0.45, r: 18, vy: 0 };
-  const gravity = 0.085;
-  const flap = -3.3;
+  // Física ajustada para sentirse igual en móvil/desktop (independiente de FPS)
+  const gravity = 0.22;
+  const flap = -5.4;
   const pipes = [];
   const gap = 190;
   const pipeW = 54;
-  const speed = 1.55;
-  const spawnEvery = 145;
+  const speed = 2.0;
+  const spawnInterval = 145 * (1000 / 60);
 
   function reset(full = true) {
     if (full) score = 0;
     bird.y = H * 0.45; bird.vy = 0;
     pipes.length = 0;
     frames = 0;
+    spawnTimer = 0;
+    lastTime = 0;
     started = false;
     ended = false;
   }
@@ -170,17 +175,23 @@ export function startGame(container, config, onWin) {
     return false;
   }
 
-  function update() {
+  function update(time = 0) {
     if (!running) return;
-    frames++;
+    const dt = lastTime ? Math.min((time - lastTime) / (1000 / 60), 2.2) : 1;
+    lastTime = time;
+    frames += dt;
     drawBackground();
 
     if (started && !ended) {
-      bird.vy += gravity;
-      bird.y += bird.vy;
-      if (frames % spawnEvery === 0) spawnPipe();
+      bird.vy += gravity * dt;
+      bird.y += bird.vy * dt;
+      spawnTimer += dt * (1000 / 60);
+      if (spawnTimer >= spawnInterval) {
+        spawnPipe();
+        spawnTimer -= spawnInterval;
+      }
       for (const p of pipes) {
-        p.x -= speed;
+        p.x -= speed * dt;
         if (!p.passed && p.x + pipeW < bird.x) {
           p.passed = true;
           score++;

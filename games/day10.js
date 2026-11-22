@@ -1,4 +1,6 @@
 // Día 10: Para el Tiempo - detener entre 5.00 y 5.50
+import { getAllMyAvatars } from '../js/avatars.js';
+
 export function startGame(container, config, onWin) {
   const min = (config.gameConfig && config.gameConfig.min) || 5.0;
   const max = (config.gameConfig && config.gameConfig.max) || 5.5;
@@ -18,6 +20,17 @@ export function startGame(container, config, onWin) {
   title.style.cssText = 'color:#f2c6ce;font-weight:600;';
   title.textContent = `Para el tiempo entre ${min.toFixed(2)} y ${max.toFixed(2)} s`;
   root.appendChild(title);
+
+  const avatarRow = document.createElement('div');
+  avatarRow.style.cssText = 'display:flex;gap:10px;align-items:center;justify-content:center;';
+  getAllMyAvatars().forEach((src) => {
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = 'avatar';
+    img.style.cssText = 'width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid #d4af37;background:#2c1a1d;';
+    avatarRow.appendChild(img);
+  });
+  root.appendChild(avatarRow);
 
   const display = document.createElement('div');
   display.style.cssText = 'font-family:"Playfair Display",serif;font-size:3.2rem;color:#d4af37;letter-spacing:2px;text-shadow:0 2px 12px rgba(212,175,55,0.3);';

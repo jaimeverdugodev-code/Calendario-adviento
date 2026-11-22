@@ -1,13 +1,15 @@
-// Día 8: Gira el Recuerdo - 3x3 piezas rotadas
+// Día 8: Gira el Recuerdo - 3x3 piezas rotadas (5 fallos = reinicio)
+import { sfx } from '../js/audio.js';
+
 export function startGame(container, config, onWin) {
   const gridN = (config.gameConfig && config.gameConfig.grid) || 3;
+  const maxFails = 5;
   const root = document.createElement('div');
   root.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;gap:8px;padding:10px;';
   container.appendChild(root);
 
   const info = document.createElement('div');
   info.style.cssText = 'text-align:center;color:#f2c6ce;font-weight:600;';
-  info.textContent = 'Toca cada pieza para girarla hasta completar la foto';
   root.appendChild(info);
 
   const boardWrap = document.createElement('div');
@@ -21,16 +23,25 @@ export function startGame(container, config, onWin) {
   img.src = config.photo || '';
   let rotations = [];
   let won = false;
+  let fails = 0;
 
-  function setup() {
+  function updateInfo(msg) {
+    const base = msg || 'Toca cada pieza para girarla hasta completar la foto';
+    info.textContent = `${base} · Fallos: ${fails}/${maxFails}`;
+  }
+
+  function setup(resetFails = false) {
+    if (resetFails) fails = 0;
     board.innerHTML = '';
     rotations = [];
+    won = false;
     for (let r=0;r<gridN;r++) for (let c=0;c<gridN;c++) {
       let rot = [0,90,180,270][Math.floor(Math.random()*4)];
       rotations.push(rot);
     }
     // ensure not already solved
     if (rotations.every(x=>x===0)) rotations[0] = 90;
+    updateInfo();
 
     for (let r=0;r<gridN;r++) for (let c=0;c<gridN;c++) {
       const idx = r*gridN + c;
@@ -52,20 +63,31 @@ export function startGame(container, config, onWin) {
       cell.appendChild(inner);
       cell.addEventListener('click', () => {
         if (won) return;
+        const wasCorrect = rotations[idx] % 360 === 0;
         rotations[idx] = (rotations[idx] + 90) % 360;
         inner.style.transform = `rotate(${rotations[idx]}deg)`;
-        checkWin();
+        if (rotations.every(x => x % 360 === 0)) {
+          won = true;
+          info.textContent = '¡Foto completada!';
+          try { sfx('win'); } catch (e) {}
+          setTimeout(() => onWin && onWin(), 700);
+          return;
+        }
+        if (wasCorrect) onFail();
       });
       board.appendChild(cell);
     }
   }
 
-  function checkWin() {
-    if (rotations.every(x => x % 360 === 0)) {
-      won = true;
-      info.textContent = '¡Foto completada!';
-      setTimeout(() => onWin && onWin(), 700);
+  function onFail() {
+    fails += 1;
+    try { sfx('fail'); } catch (e) {}
+    if (fails >= maxFails) {
+      updateInfo('Has fallado 5 veces. ¡Vuelve a intentarlo!');
+      setTimeout(() => setup(true), 900);
+      return;
     }
+    updateInfo();
   }
 
   if (img.complete) setup(); else { img.onload = setup; img.onerror = setup; }

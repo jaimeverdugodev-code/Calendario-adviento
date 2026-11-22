@@ -71,7 +71,7 @@ export function startGame(container, config, onWin) {
     items.push({
       x: 30 + Math.random() * (W - 60),
       y: -28,
-      vy: 1.5 + Math.random() * 0.85,
+      vy: 2.5 + Math.random() * 1.35,
       type: isCoal ? 'coal' : 'heart',
       r: 24
     });

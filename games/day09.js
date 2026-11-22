@@ -9,28 +9,28 @@ export function startGame(container, config, onWin) {
   let running = true;
   const meSrc = getMyAvatarForDay(config.day);
 
-  const hitSoundCandidates = [
-    'public/dia09/aplastar.mp3',
-    'public/dia09/aplastar.ogg',
-    'public/dia09/aplastar.wav',
-    'public/dia09/golpe.mp3',
-    'public/dia09/golpe.ogg',
-    'public/dia09/golpe.wav',
-    'public/dia09/sonido.mp3',
-    'public/dia09/sonido.ogg',
-    'public/dia09/sonido.wav'
-  ];
-  let hitAudio = null;
-  hitSoundCandidates.forEach((src) => {
-    const a = new Audio(src);
+  const soundFiles = ['aplastar', 'golpe', 'sonido'];
+  const soundExts = ['mp3', 'ogg', 'wav'];
+  const hitAudios = soundFiles.map((name) => {
+    const a = new Audio();
     a.preload = 'auto';
-    a.addEventListener('canplaythrough', () => { if (!hitAudio) hitAudio = a; }, { once: true });
+    let extIdx = 0;
+    const tryNext = () => {
+      if (extIdx >= soundExts.length) return;
+      a.src = `public/dia09/${name}.${soundExts[extIdx++]}`;
+    };
+    a.addEventListener('error', tryNext);
+    tryNext();
+    return a;
   });
+  let hitSoundIdx = 0;
   function playWhackSound() {
-    if (!hitAudio) return;
+    if (!hitAudios.length) return;
+    const a = hitAudios[hitSoundIdx % hitAudios.length];
+    hitSoundIdx += 1;
     try {
-      hitAudio.currentTime = 0;
-      const p = hitAudio.play();
+      a.currentTime = 0;
+      const p = a.play();
       if (p && typeof p.catch === 'function') p.catch(() => {});
     } catch (e) {}
   }

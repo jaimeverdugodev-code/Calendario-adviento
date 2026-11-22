@@ -9,3 +9,7 @@ export function getMyAvatarForDay(day) {
   const idx = (Number.isFinite(n) ? Math.abs(Math.floor(n) - 1) : 0) % YO_AVATARS.length;
   return YO_AVATARS[idx];
 }
+
+export function getAllMyAvatars() {
+  return [...YO_AVATARS];
+}

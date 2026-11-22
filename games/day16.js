@@ -13,7 +13,7 @@ export function startGame(container, config, onWin) {
   let running = true, won = false, lost = false, raf;
 
   const paddle = { baseW: 74, w: 74, h: 16, x: W / 2 - 37, y: H - 30, wideUntil: 0 };
-  const ball = { x: W / 2, y: H - 50, r: 8, vx: 2.4, vy: -2.8, stuck: true, slowUntil: 0, speedFactor: 1 };
+  const ball = { x: W / 2, y: H - 50, r: 8, vx: 3.4, vy: -3.8, stuck: true, slowUntil: 0, speedFactor: 1 };
   const brickPad = 6, brickTop = 50;
   const brickW = (W - brickPad * (cols + 1)) / cols;
   const brickH = 20;
@@ -48,7 +48,7 @@ export function startGame(container, config, onWin) {
 
   function resetBall() {
     ball.x = paddle.x + paddle.w / 2; ball.y = paddle.y - ball.r - 2;
-    ball.vx = (Math.random() > 0.5 ? 1 : -1) * 2.4; ball.vy = -2.8; ball.stuck = true;
+    ball.vx = (Math.random() > 0.5 ? 1 : -1) * 3.4; ball.vy = -3.8; ball.stuck = true;
     ball.speedFactor = 1; ball.slowUntil = 0;
   }
 
@@ -189,8 +189,8 @@ export function startGame(container, config, onWin) {
         if (ball.vy > 0 && ball.y + ball.r >= paddle.y && ball.y - ball.r <= paddle.y + paddle.h && ball.x >= paddle.x && ball.x <= paddle.x + paddle.w) {
           ball.y = paddle.y - ball.r;
           const hit = (ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2);
-          ball.vx = hit * 3.4;
-          ball.vy = -Math.abs(ball.vy) || -2.8;
+          ball.vx = hit * 4.8;
+          ball.vy = -Math.max(3.8, Math.abs(ball.vy));
         }
 
         // bricks: perfora al caer (vy > 0), rebota al subir

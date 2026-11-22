@@ -23,10 +23,10 @@ export function startGame(container, config, onWin) {
     const progress = Math.min(1, elapsed / durationMs);
     // un solo copo por oleada en un carril aleatorio (nunca varios a la vez)
     const l = Math.floor(Math.random() * 3);
-    const vy = 2.3 + progress * 3.0; // velocidad incremental, más difícil pero ganable
+    const vy = 2.8 + progress * 5.2; // velocidad incremental, más difícil
     flakes.push({ lane: l, y: -24, vy, r: 15 });
-    const nextIn = 760 - progress * 280 + Math.random() * 200;
-    spawnTimer = setTimeout(spawnWave, Math.max(430, nextIn));
+    const nextIn = 620 - progress * 320 + Math.random() * 140;
+    spawnTimer = setTimeout(spawnWave, Math.max(260, nextIn));
   }
 
   function draw() {

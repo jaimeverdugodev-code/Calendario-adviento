@@ -45,7 +45,7 @@ export const DIAS = [
     day: 4,
     title: "Infla el Corazón",
     gameId: "day04",
-    gameConfig: { durationMs: 10000, targetTaps: 75 },
+    gameConfig: { durationMs: 10000, targetTaps: 100 },
     photo: "public/fotos/dia04.svg",
     message: "Mi corazón late más fuerte cuando estás cerca."
   },
@@ -85,7 +85,7 @@ export const DIAS = [
     day: 9,
     title: "¡Atrapa al Elfo!",
     gameId: "day09",
-    gameConfig: { targetHits: 10 },
+    gameConfig: { targetHits: 20 },
     photo: "public/fotos/dia09.svg",
     message: "Siempre te atraparía a ti, una y otra vez."
   },
@@ -93,7 +93,7 @@ export const DIAS = [
     day: 10,
     title: "Para el Tiempo",
     gameId: "day10",
-    gameConfig: { min: 5.0, max: 5.0 },
+    gameConfig: { min: 5.0, max: 5.10 },
     photo: "public/fotos/dia10.svg",
     message: "El mejor momento es cualquiera si es contigo."
   },
@@ -109,7 +109,7 @@ export const DIAS = [
     day: 12,
     title: "Pesca Navideña",
     gameId: "day12",
-    gameConfig: { target: 6 },
+    gameConfig: { target: 10 },
     photo: "public/fotos/dia12.svg",
     message: "Has pescado los mejores tesoros: nuestros momentos."
   },
@@ -125,7 +125,7 @@ export const DIAS = [
     day: 14,
     title: "Simón Dice Navideño",
     gameId: "day14",
-    gameConfig: { steps: 5 },
+    gameConfig: { steps: 6 },
     photo: "public/fotos/dia14.svg",
     message: "Mi corazón sigue tu ritmo."
   },
@@ -165,17 +165,17 @@ export const DIAS = [
     day: 19,
     title: "Salto a las Nubes",
     gameId: "day19",
-    gameConfig: { targetHeight: 1800 },
+    gameConfig: { targetHeight: 4200 },
     photo: "public/fotos/dia19.svg",
     message: "Contigo llego hasta las estrellas."
   },
   {
     day: 20,
-    title: "¿Dónde está mi amor?",
+    title: "Cupido al Blanco",
     gameId: "day20",
-    gameConfig: { scene: "public/wally/escena.jpg", target: { xPct: 0.62, yPct: 0.48, rPct: 0.08 }, hint: "Busca y toca el detalle escondido" },
+    gameConfig: { targetHits: 10 },
     photo: "public/fotos/dia20.svg",
-    message: "Te encontraría entre un millón."
+    message: "Tu amor siempre da en el blanco."
   },
   {
     day: 21,

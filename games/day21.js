@@ -15,7 +15,7 @@ export function startGame(container, config, onWin) {
   let stack = []; // {x,w,color,base?}
   let current = null;
   let dir = 1;
-  let speed = 3.0;
+  let speed = 4.8;
 
   function newCurrent() {
     const prev = stack[stack.length - 1];
@@ -93,7 +93,7 @@ export function startGame(container, config, onWin) {
       lost = true; running = false; draw(); return;
     }
     stack.push({ x: overlapLeft, y: current.y, w: overlap, h: boxH, color: current.color });
-    speed += 0.28;
+    speed += 0.45;
     dir *= -1;
     const placed = stack.length - 1;
     if (placed >= targetStack) {

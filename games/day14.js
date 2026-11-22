@@ -1,7 +1,21 @@
 // Día 14: Simón Dice Navideño - repetir secuencia de 5 pasos (con sonido)
 export function startGame(container, config, onWin) {
   const stepsTotal = (config.gameConfig && config.gameConfig.steps) || 5;
-  const tones = [261.63, 329.63, 392.0, 523.25]; // C4, E4, G4, C5
+  const tones = [261.63, 329.63, 392.0, 523.25]; // fallback
+  const soundNames = ['rojo', 'verde', 'azul', 'amarillo'];
+  const soundExts = ['mp3', 'ogg', 'wav'];
+  const padAudios = soundNames.map((name) => {
+    const a = new Audio();
+    a.preload = 'auto';
+    let extIdx = 0;
+    const tryNext = () => {
+      if (extIdx >= soundExts.length) return;
+      a.src = `public/dia14/${name}.${soundExts[extIdx++]}`;
+    };
+    a.addEventListener('error', tryNext);
+    tryNext();
+    return a;
+  });
   const colors = [
     { base: '#b81d33', glow: '#ff6b81', label: '❤' },
     { base: '#2e7d32', glow: '#7ed957', label: '★' },
@@ -53,7 +67,22 @@ export function startGame(container, config, onWin) {
     return audioCtx;
   }
 
-  function beep(i, duration = 0.28) {
+  function playPadSound(i, duration = 0.28) {
+    const a = padAudios[i];
+    if (a && a.src) {
+      try {
+        a.currentTime = 0;
+        const p = a.play();
+        if (p && typeof p.catch === 'function') p.catch(() => {
+          beepFallback(i, duration);
+        });
+        return;
+      } catch (e) { /* fallback abajo */ }
+    }
+    beepFallback(i, duration);
+  }
+
+  function beepFallback(i, duration = 0.28) {
     try {
       const ctx = ensureAudio();
       if (!ctx) return;
@@ -74,7 +103,7 @@ export function startGame(container, config, onWin) {
   function flash(i, duration = 450, sound = true) {
     return new Promise(res => {
       const p = pads[i];
-      if (sound) beep(i, duration / 1000);
+      if (sound) playPadSound(i, duration / 1000);
       p.style.filter = 'brightness(1.5)';
       p.style.transform = 'scale(1.05)';
       p.style.boxShadow = `0 0 20px ${colors[i].glow}`;

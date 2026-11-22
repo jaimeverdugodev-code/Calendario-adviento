@@ -1,135 +1,223 @@
-// Día 20: ¿Dónde está mi amor? - escena tipo "buscando a Wally"
+// Día 20: Cupido al Blanco - dispara flechas a corazones en movimiento
 import { sfx } from '../js/audio.js';
-
-export const dia20 = {
-  title: "Día 20: ¿Dónde está mi amor?",
-  description: "¡Encuentra a mi amor entre la gran multitud del mercadillo navideño! Toca sobre él cuando lo veas.",
-  photo: "public/wally/escena.jpg", // Asegúrate de guardar aquí la imagen
-  gameConfig: {
-    scene: "public/wally/escena.jpg",
-    target: { xPct: 0.68, yPct: 0.53, rPct: 0.045 }, // Coordenadas del objetivo (hombre con gafas y jersey navideño junto al puesto rojo)
-    hint: "Busca a tu amor (el de las gafas y jersey navideño) cerca de una de las casetas del mercadillo..."
-  }
-};
+import { getMyAvatarForDay } from '../js/avatars.js';
 
 export function startGame(container, config, onWin) {
-  const cfg = config.gameConfig || {};
-  const hint = cfg.hint || 'Busca y toca el detalle escondido';
-  const target = cfg.target || { xPct: 0.68, yPct: 0.53, rPct: 0.045 };
-
+  const targetHits = (config.gameConfig && config.gameConfig.targetHits) || 10;
   const W = container.clientWidth || 360;
   const H = container.clientHeight || 420;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
+  canvas.style.touchAction = 'none';
   container.appendChild(canvas);
   const ctx = canvas.getContext('2d');
 
-  const candidates = [
-    cfg.scene,
-    'public/wally/escena.jpg',
-    'public/wally/escena.png',
-    'public/wally/escena.webp',
-    'public/wally/wally.jpg',
-    'public/wally/wally.png',
-    config.photo
-  ].filter(Boolean);
-  let cIdx = 0;
-  const img = new Image();
-  let imgReady = false;
+  const avatar = new Image();
+  avatar.src = getMyAvatarForDay(config.day);
 
-  function tryNext() {
-    if (cIdx < candidates.length) {
-      imgReady = false;
-      img.src = candidates[cIdx++];
-    }
-  }
-  img.onload = () => { imgReady = true; };
-  img.onerror = () => { tryNext(); };
-  tryNext();
-
-  let won = false;
-  let wrongFlash = 0;
+  let running = true, won = false;
+  let score = 0;
   let raf;
+  let lastTime = 0;
+  let spawnTimer = 0;
+  const arrows = []; // {x,y,vx,vy}
+  const targets = []; // {x,y,r,vx,vy,life}
+  const pops = []; // {x,y,t}
 
-  function getImageRect() {
-    const iw = (imgReady && img.naturalWidth) ? img.naturalWidth : W;
-    const ih = (imgReady && img.naturalHeight) ? img.naturalHeight : H;
-    const scale = Math.min(W / iw, H / ih);
-    const dw = iw * scale, dh = ih * scale;
-    const dx = (W - dw) / 2, dy = (H - dh) / 2;
-    return { dx, dy, dw, dh };
+  function spawnTarget() {
+    if (targets.length >= 4) return;
+    const r = 18 + Math.random() * 8;
+    const side = Math.random() < 0.5 ? -1 : 1;
+    const y = 60 + Math.random() * (H * 0.45);
+    targets.push({
+      x: side < 0 ? -r - 10 : W + r + 10,
+      y,
+      r,
+      vx: (1.2 + Math.random() * 1.4) * -side,
+      vy: (Math.random() - 0.5) * 0.5,
+      life: 1
+    });
+  }
+
+  function shoot(tx, ty) {
+    if (won) return;
+    const origin = { x: W / 2, y: H - 38 };
+    const dx = tx - origin.x;
+    const dy = ty - origin.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const speed = 8.5;
+    arrows.push({ x: origin.x, y: origin.y - 8, vx: (dx / len) * speed, vy: (dy / len) * speed });
+    try { sfx('tap'); } catch (e) {}
+  }
+
+  function drawHeart(x, y, r, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    const s = r / 8;
+    ctx.moveTo(0, 3 * s);
+    ctx.bezierCurveTo(0, 0, -8 * s, 0, -8 * s, 5 * s);
+    ctx.bezierCurveTo(-8 * s, 9 * s, 0, 12 * s, 0, 15 * s);
+    ctx.bezierCurveTo(0, 12 * s, 8 * s, 9 * s, 8 * s, 5 * s);
+    ctx.bezierCurveTo(8 * s, 0, 0, 0, 0, 3 * s);
+    ctx.fill();
+    ctx.restore();
   }
 
   function draw() {
-    ctx.clearRect(0, 0, W, H);
-    const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, '#0f1e19'); bg.addColorStop(1, '#1B0D12');
-    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#1b2742');
+    g.addColorStop(1, '#1B0D12');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
 
-    const r = getImageRect();
-    if (imgReady && img.naturalWidth) {
-      ctx.drawImage(img, r.dx, r.dy, r.dw, r.dh);
-      ctx.strokeStyle = 'rgba(212,175,55,0.6)'; ctx.lineWidth = 3;
-      ctx.strokeRect(r.dx, r.dy, r.dw, r.dh);
-    } else {
-      ctx.fillStyle = '#2c1a1d'; ctx.fillRect(r.dx, r.dy, r.dw, r.dh);
-      ctx.strokeStyle = 'rgba(212,175,55,0.4)'; ctx.lineWidth = 2; ctx.strokeRect(r.dx, r.dy, r.dw, r.dh);
-      ctx.fillStyle = '#f2c6ce'; ctx.font = '15px "Plus Jakarta Sans",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('Coloca tu imagen en', W / 2, H / 2 - 10);
-      ctx.fillStyle = '#d4af37'; ctx.font = 'bold 14px "Plus Jakarta Sans",sans-serif';
-      ctx.fillText('public/wally/escena.jpg', W / 2, H / 2 + 14);
+    // stars
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    for (let i = 0; i < 35; i++) ctx.fillRect((i * 97) % W, (i * 53) % (H * 0.6), 2, 2);
+
+    // targets
+    for (const t of targets) {
+      drawHeart(t.x, t.y - 6, t.r / 2.2, '#ff6b81');
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, t.r + 2, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(212,175,55,0.45)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
     }
 
-    if (wrongFlash > 0) {
-      ctx.fillStyle = `rgba(184,29,51,${0.25 * wrongFlash})`;
-      ctx.fillRect(0, 0, W, H);
-      wrongFlash *= 0.85;
-      if (wrongFlash < 0.02) wrongFlash = 0;
+    // arrows
+    for (const a of arrows) {
+      ctx.save();
+      ctx.translate(a.x, a.y);
+      const ang = Math.atan2(a.vy, a.vx);
+      ctx.rotate(ang);
+      ctx.strokeStyle = '#f0d77a';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-14, 0); ctx.lineTo(10, 0);
+      ctx.stroke();
+      ctx.fillStyle = '#ff6b81';
+      ctx.beginPath();
+      ctx.moveTo(14, 0); ctx.lineTo(6, -4); ctx.lineTo(6, 4);
+      ctx.closePath(); ctx.fill();
+      ctx.restore();
     }
 
-    ctx.fillStyle = 'rgba(0,0,0,0.65)'; ctx.fillRect(8, 8, W - 16, 42);
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 13px "Plus Jakarta Sans",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(won ? '¡Lo encontraste! ❤' : hint, W / 2, 29);
-
-    if (!won) {
-      ctx.fillStyle = 'rgba(253,248,245,0.85)'; ctx.font = '11px "Plus Jakarta Sans",sans-serif';
-      ctx.fillText('Toca la zona correcta en la imagen', W / 2, H - 14);
+    // pops
+    for (const p of pops) {
+      ctx.globalAlpha = Math.max(0, p.t / 20);
+      ctx.fillStyle = '#f2c6ce';
+      ctx.font = 'bold 16px "Plus Jakarta Sans",sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('+1', p.x, p.y);
+      ctx.globalAlpha = 1;
     }
+
+    // shooter base
+    ctx.fillStyle = '#2c1a1d';
+    ctx.fillRect(W/2 - 34, H - 32, 68, 24);
+    ctx.strokeStyle = '#d4af37';
+    ctx.strokeRect(W/2 - 34, H - 32, 68, 24);
+
+    // avatar
+    ctx.save();
+    ctx.beginPath(); ctx.arc(W/2, H - 44, 20, 0, Math.PI*2);
+    ctx.fillStyle = '#d4af37'; ctx.fill();
+    ctx.beginPath(); ctx.arc(W/2, H - 44, 17, 0, Math.PI*2); ctx.clip();
+    if (avatar.complete && avatar.naturalWidth) ctx.drawImage(avatar, W/2 - 17, H - 61, 34, 34);
+    else { ctx.fillStyle = '#f2c6ce'; ctx.fillRect(W/2 - 17, H - 61, 34, 34); }
+    ctx.restore();
+
+    // HUD
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(8, 8, W - 16, 36);
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 15px "Plus Jakarta Sans",sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(`Dianas: ${score}/${targetHits}`, 16, 26);
+    ctx.textAlign = 'right'; ctx.fillStyle = '#f2c6ce';
+    ctx.fillText('Toca para disparar', W - 16, 26);
 
     if (won) {
-      const tx = r.dx + target.xPct * r.dw;
-      const ty = r.dy + target.yPct * r.dh;
-      const tr = target.rPct * Math.min(r.dw, r.dh);
-      ctx.beginPath(); ctx.arc(tx, ty, tr, 0, Math.PI * 2);
-      ctx.strokeStyle = '#d4af37'; ctx.lineWidth = 4; ctx.stroke();
-      ctx.beginPath(); ctx.arc(tx, ty, tr + 6, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(212,175,55,0.5)'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = 'rgba(27,13,18,0.65)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#d4af37'; ctx.font = 'bold 30px "Playfair Display",serif'; ctx.textAlign = 'center';
+      ctx.fillText('¡Puntería perfecta!', W/2, H/2 - 6);
+      ctx.fillStyle = '#f2c6ce'; ctx.font = '16px "Plus Jakarta Sans",sans-serif';
+      ctx.fillText('Cupido estaría orgulloso', W/2, H/2 + 24);
+    }
+  }
+
+  function update(time = 0) {
+    if (!running) return;
+    const dt = lastTime ? Math.min((time - lastTime) / (1000 / 60), 2) : 1;
+    lastTime = time;
+
+    if (!won) {
+      spawnTimer += dt * (1000 / 60);
+      if (spawnTimer > 700) {
+        spawnTarget();
+        spawnTimer = 0;
+      }
+
+      for (let i = arrows.length - 1; i >= 0; i--) {
+        const a = arrows[i];
+        a.x += a.vx * dt;
+        a.y += a.vy * dt;
+        if (a.x < -30 || a.x > W + 30 || a.y < -30 || a.y > H + 30) {
+          arrows.splice(i, 1);
+        }
+      }
+
+      for (let i = targets.length - 1; i >= 0; i--) {
+        const t = targets[i];
+        t.x += t.vx * dt;
+        t.y += t.vy * dt;
+        if (t.y < 40 || t.y > H * 0.65) t.vy *= -1;
+        if ((t.vx > 0 && t.x - t.r > W + 30) || (t.vx < 0 && t.x + t.r < -30)) {
+          targets.splice(i, 1);
+          continue;
+        }
+        for (let j = arrows.length - 1; j >= 0; j--) {
+          const a = arrows[j];
+          const dx = a.x - t.x, dy = a.y - t.y;
+          if (dx * dx + dy * dy < (t.r + 6) * (t.r + 6)) {
+            targets.splice(i, 1);
+            arrows.splice(j, 1);
+            score++;
+            pops.push({ x: t.x, y: t.y, t: 20 });
+            try { sfx('score'); } catch (e) {}
+            if (score >= targetHits) {
+              won = true;
+              setTimeout(() => onWin && onWin(), 900);
+            }
+            break;
+          }
+        }
+      }
+
+      for (let i = pops.length - 1; i >= 0; i--) {
+        pops[i].y -= 0.6 * dt;
+        pops[i].t -= dt;
+        if (pops[i].t <= 0) pops.splice(i, 1);
+      }
     }
 
-    raf = requestAnimationFrame(draw);
+    draw();
+    raf = requestAnimationFrame(update);
+  }
+
+  function toCanvas(e) {
+    const r = canvas.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * (W / r.width), y: (e.clientY - r.top) * (H / r.height) };
   }
 
   canvas.addEventListener('pointerdown', (e) => {
-    if (won) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) * (W / rect.width);
-    const y = (e.clientY - rect.top) * (H / rect.height);
-    const r = getImageRect();
-    if (x < r.dx || x > r.dx + r.dw || y < r.dy || y > r.dy + r.dh) return;
-    const tx = r.dx + target.xPct * r.dw;
-    const ty = r.dy + target.yPct * r.dh;
-    const tr = target.rPct * Math.min(r.dw, r.dh);
-    const dx = x - tx, dy = y - ty;
-    if (dx * dx + dy * dy <= tr * tr) {
-      won = true;
-      try { sfx('success'); } catch (e) {}
-      setTimeout(() => onWin && onWin(), 800);
-    } else {
-      wrongFlash = 1;
-      try { sfx('tap'); } catch (e) {}
-    }
+    e.preventDefault();
+    const p = toCanvas(e);
+    shoot(p.x, p.y);
   });
 
-  raf = requestAnimationFrame(draw);
-  return () => { cancelAnimationFrame(raf); };
+  spawnTarget();
+  spawnTarget();
+  raf = requestAnimationFrame(update);
+  return () => { running = false; cancelAnimationFrame(raf); };
 }
