@@ -167,9 +167,12 @@ export function sfx(type = 'tap') {
   }
 }
 
-function playTrackBg() {
+function playTrackBg({ reset = false } = {}) {
   if (!bgTrack) return Promise.resolve(false);
-  try { bgTrack.pause(); bgTrack.currentTime = 0; } catch (e) {}
+  try {
+    bgTrack.pause();
+    if (reset) bgTrack.currentTime = 0;
+  } catch (e) {}
   return bgTrack.play().then(() => {
     musicSource = 'track';
     stopSynthLoop();
@@ -279,6 +282,18 @@ export function stopMusic() {
 
 export function tryStartMusic() {
   if (musicEnabled) startMusic();
+}
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stopMusic();
+    } else if (musicEnabled) {
+      startMusic();
+    }
+  });
+  window.addEventListener('pagehide', () => stopMusic());
+  window.addEventListener('pageshow', () => { if (!document.hidden && musicEnabled) startMusic(); });
 }
 
 // Pre-cargar pista de usuario para que el primer gesto pueda iniciar música sin esperar
