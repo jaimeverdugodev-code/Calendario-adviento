@@ -30,8 +30,8 @@ export function startGame(container, config, onWin) {
   const pipes = [];
   const gap = 190;
   const pipeW = 54;
-  const speed = 2.0;
-  const spawnInterval = 145 * (1000 / 60);
+  const speed = 3.2;
+  const spawnInterval = 105 * (1000 / 60);
 
   function reset(full = true) {
     if (full) score = 0;
