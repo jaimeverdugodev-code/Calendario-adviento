@@ -48,7 +48,7 @@ export function startGame(container, config, onWin) {
   root.appendChild(info);
 
   const board = document.createElement('div');
-  board.style.cssText = `display:grid;grid-template-columns:repeat(${size},1fr);gap:3px;width:min(94vw,${Math.min(container.clientHeight||420,400)-30}px);aspect-ratio:1/1;touch-action:none;`;
+  board.style.cssText = `display:grid;grid-template-columns:repeat(${size},1fr);gap:2px;width:min(90vw,${Math.min(container.clientHeight||420,360)-40}px);aspect-ratio:1/1;touch-action:none;`;
   root.appendChild(board);
 
   const status = document.createElement('div');
@@ -69,8 +69,8 @@ export function startGame(container, config, onWin) {
       let bg = 'rgba(253,248,245,0.12)';
       if (fw) bg = 'rgba(46,125,50,0.55)';
       else if (sel) bg = 'rgba(212,175,55,0.5)';
-      const fontSize = size >= 10 ? '0.72rem' : '1.05rem';
-      el.style.cssText = `display:flex;align-items:center;justify-content:center;border-radius:6px;background:${bg};color:#fff;font-weight:700;font-size:${fontSize};user-select:none;border:1px solid rgba(212,175,55,0.25);`;
+      const fontSize = size >= 10 ? '0.68rem' : (size >= 9 ? '0.78rem' : '1rem');
+      el.style.cssText = `display:flex;align-items:center;justify-content:center;border-radius:5px;background:${bg};color:#fff;font-weight:700;font-size:${fontSize};user-select:none;border:1px solid rgba(212,175,55,0.25);`;
       el.textContent = grid[r][c];
       el.dataset.r = r; el.dataset.c = c;
       board.appendChild(el);

@@ -123,8 +123,21 @@ export function startGame(container, config, onWin) {
   function draw() {
     ctx.clearRect(0, 0, W, H);
     const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, '#1b2742'); g.addColorStop(1, '#1B0D12');
+    g.addColorStop(0, '#18304d'); g.addColorStop(0.6, '#2a1f2f'); g.addColorStop(1, '#1B0D12');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // fondo navideño suave
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    for (let i = 0; i < 22; i++) ctx.fillRect((i * 73) % W, (i * 41) % H, 2, 2);
+    ctx.fillStyle = 'rgba(46,125,50,0.18)';
+    for (let i = 0; i < 6; i++) {
+      const x = 30 + i * (W / 5);
+      ctx.beginPath();
+      ctx.moveTo(x, H - 25);
+      ctx.lineTo(x - 18, H);
+      ctx.lineTo(x + 18, H);
+      ctx.closePath();
+      ctx.fill();
+    }
 
     for (const it of items) {
       const size = it.r * 2;

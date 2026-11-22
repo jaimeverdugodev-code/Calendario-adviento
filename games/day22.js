@@ -11,20 +11,20 @@ export function startGame(container, config, onWin) {
   if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
 
   const dpad = document.createElement('div');
-  dpad.style.cssText = 'position:absolute;left:12px;bottom:12px;width:120px;height:120px;z-index:5;touch-action:none;user-select:none;';
+  dpad.style.cssText = 'position:absolute;left:12px;bottom:12px;width:138px;height:138px;z-index:8;touch-action:none;user-select:none;';
   const mkBtn = (dir, label, css) => {
     const b = document.createElement('button');
     b.type = 'button';
     b.dataset.dir = dir;
     b.textContent = label;
-    b.style.cssText = `position:absolute;width:40px;height:40px;border-radius:10px;border:2px solid rgba(212,175,55,0.55);background:rgba(253,248,245,0.14);color:#fff;font-size:20px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;${css}`;
+    b.style.cssText = `position:absolute;width:46px;height:46px;border-radius:12px;border:2px solid rgba(240,215,122,0.85);background:rgba(27,13,18,0.55);color:#fff;font-size:22px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 3px 10px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.08);backdrop-filter:blur(2px);${css}`;
     dpad.appendChild(b);
     return b;
   };
-  mkBtn('up', '▲', 'left:40px;top:0;');
-  mkBtn('left', '◀', 'left:0;top:40px;');
-  mkBtn('right', '▶', 'left:80px;top:40px;');
-  mkBtn('down', '▼', 'left:40px;top:80px;');
+  mkBtn('up', '▲', 'left:46px;top:0;');
+  mkBtn('left', '◀', 'left:0;top:46px;');
+  mkBtn('right', '▶', 'left:92px;top:46px;');
+  mkBtn('down', '▼', 'left:46px;top:92px;');
   container.appendChild(dpad);
 
   const meImg = new Image(); meImg.src = getMyAvatarForDay(config.day);
@@ -80,8 +80,11 @@ export function startGame(container, config, onWin) {
   function draw() {
     ctx.clearRect(0,0,W,H);
     const g = ctx.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#0f1e19'); g.addColorStop(1,'#1B0D12');
+    g.addColorStop(0,'#17372c'); g.addColorStop(1,'#1B0D12');
     ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    // detalles navideños suaves (estáticos, sin lag)
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    for (let i=0;i<20;i++) ctx.fillRect((i*53)%W, (i*37)%H, 2, 2);
 
     // maze
     for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {

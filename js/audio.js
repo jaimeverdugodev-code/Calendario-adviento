@@ -67,6 +67,7 @@ export function unlockAudio() {
 }
 
 export function isMusicEnabled() { return musicEnabled; }
+export function isMusicPlaying() { return musicPlaying; }
 
 export function setMusicEnabled(v) {
   musicEnabled = !!v;

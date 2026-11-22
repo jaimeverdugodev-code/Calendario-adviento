@@ -95,7 +95,7 @@ export function startGame(container, config, onWin) {
     active = next;
     round += 1;
     chimneys[active].elf.style.transform = 'translateY(-18%)';
-    const stay = Math.max(320, 900 - round * 35 + Math.random() * 180);
+    const stay = Math.max(460, 950 - round * 20 + Math.random() * 180);
     timer = setTimeout(() => {
       if (!running) return;
       if (active >= 0) {
@@ -110,7 +110,7 @@ export function startGame(container, config, onWin) {
           return;
         }
       }
-      const gap = Math.max(120, 320 - round * 12 + Math.random() * 120);
+      const gap = Math.max(200, 360 - round * 8 + Math.random() * 120);
       timer = setTimeout(showRandom, gap);
     }, stay);
   }

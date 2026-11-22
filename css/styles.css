@@ -38,6 +38,15 @@ button { font-family: inherit; }
 
 .hidden { display: none !important; }
 
+.audio-hint {
+  position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%);
+  z-index: 80; background: rgba(27,13,18,0.88); color: #f2c6ce;
+  border: 1px solid rgba(212,175,55,0.45); border-radius: 999px;
+  padding: 10px 14px; font-size: 0.85rem; font-weight: 600;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35); backdrop-filter: blur(4px);
+  max-width: calc(100vw - 24px); text-align: center;
+}
+
 .app { max-width: 520px; margin: 0 auto; padding: 16px 14px 40px; position: relative; z-index: 2; }
 
 .header { text-align: center; margin-bottom: 14px; }

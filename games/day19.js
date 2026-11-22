@@ -53,10 +53,56 @@ export function startGame(container, config, onWin) {
 
   function draw() {
     const t = Math.min(1, maxHeight / targetHeight);
-    const g = ctx.createLinearGradient(0,0,0,H);
-    g.addColorStop(0, `rgb(${10+20*t},${20+30*t},${50+40*t})`);
-    g.addColorStop(1, '#1B0D12');
-    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+    // Cielo por etapas según altura: césped/cielo -> nubes -> espacio
+    const sky = ctx.createLinearGradient(0,0,0,H);
+    if (t < 0.33) {
+      const p = t / 0.33;
+      sky.addColorStop(0, `rgb(${90 - p*40},${170 - p*40},${235 - p*80})`);
+      sky.addColorStop(0.7, `rgb(${120 - p*50},${200 - p*60},${255 - p*110})`);
+      sky.addColorStop(1, '#4f9a4f');
+    } else if (t < 0.66) {
+      const p = (t - 0.33) / 0.33;
+      sky.addColorStop(0, `rgb(${40 - p*20},${90 - p*30},${170 - p*60})`);
+      sky.addColorStop(1, `rgb(${120 - p*60},${170 - p*80},${220 - p*90})`);
+    } else {
+      const p = (t - 0.66) / 0.34;
+      sky.addColorStop(0, `rgb(${8 + p*4},${12 + p*8},${30 + p*20})`);
+      sky.addColorStop(1, `rgb(${20 - p*10},${30 - p*15},${70 - p*30})`);
+    }
+    ctx.fillStyle = sky;
+    ctx.fillRect(0,0,W,H);
+
+    // Césped al inicio
+    if (t < 0.4) {
+      const grassA = 1 - (t / 0.4);
+      ctx.fillStyle = `rgba(62,140,62,${0.55 * grassA})`;
+      ctx.fillRect(0, H - 70, W, 70);
+      ctx.fillStyle = `rgba(95,180,95,${0.45 * grassA})`;
+      for (let x=0; x<W; x+=16) ctx.fillRect(x, H - 72 - (x%3)*2, 8, 10);
+    }
+
+    // Nubes en tramo medio
+    if (t > 0.15 && t < 0.8) {
+      const cloudA = t < 0.45 ? (t - 0.15) / 0.3 : 1 - (t - 0.45) / 0.35;
+      ctx.fillStyle = `rgba(255,255,255,${0.35 * Math.max(0, Math.min(1, cloudA))})`;
+      for (let i=0;i<6;i++) {
+        const cx = (i * 90 + 20) % (W + 60) - 30;
+        const cy = 60 + (i % 3) * 55;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 18, 0, Math.PI*2);
+        ctx.arc(cx+18, cy+4, 14, 0, Math.PI*2);
+        ctx.arc(cx-16, cy+6, 12, 0, Math.PI*2);
+        ctx.fill();
+      }
+    }
+
+    // Estrellas al acercarse al espacio
+    if (t > 0.55) {
+      const starA = Math.min(1, (t - 0.55) / 0.35);
+      ctx.fillStyle = `rgba(255,255,255,${0.85 * starA})`;
+      for (let i=0;i<35;i++) ctx.fillRect((i*97)%W, (i*53)%(H*0.7), 2, 2);
+    }
 
     drawStar();
     // platforms

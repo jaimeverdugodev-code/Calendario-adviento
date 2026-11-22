@@ -100,6 +100,8 @@ export function startGame(container, config, onWin) {
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, '#1b2742'); g.addColorStop(1, '#1B0D12');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    for (let i=0;i<24;i++) ctx.fillRect((i*67)%W, (i*43)%H, 2, 2);
 
     for (const b of bricks) if (b.alive) {
       ctx.fillStyle = b.color;

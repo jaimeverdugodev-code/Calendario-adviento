@@ -31,8 +31,14 @@ export function startGame(container, config, onWin) {
 
   function draw() {
     const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, '#102033'); g.addColorStop(1, '#1B0D12');
+    g.addColorStop(0, '#0f2742'); g.addColorStop(0.7, '#1b2230'); g.addColorStop(1, '#1B0D12');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // estrellas y nieve de fondo
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    for (let i = 0; i < 28; i++) ctx.fillRect((i * 61) % W, (i * 47) % H, 2, 2);
+    // suelo nevado
+    ctx.fillStyle = 'rgba(253,248,245,0.08)';
+    ctx.fillRect(0, H - 90, W, 90);
     // lane dividers
     ctx.strokeStyle = 'rgba(255,255,255,0.12)';
     ctx.setLineDash([8, 8]);

@@ -3,7 +3,7 @@ import { isCompleted, resetProgress, completedCount } from './storage.js';
 import { getDayState, isAdminMode } from './calendar.js';
 import { openGame, closeCurrentGame } from './engine.js';
 import { vibrate, createSnow, launchConfetti, showModal, hideModal, setProgress } from './ui.js';
-import { unlockAudio, tryStartMusic, toggleMusic, isMusicEnabled, sfx } from './audio.js';
+import { unlockAudio, tryStartMusic, toggleMusic, isMusicEnabled, isMusicPlaying, sfx } from './audio.js';
 
 const calendarEl = document.getElementById('calendar');
 const gameModal = document.getElementById('game-modal');
@@ -32,13 +32,18 @@ function init() {
     musicBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       unlockAudio();
-      toggleMusic();
+      const on = toggleMusic();
       syncMusicBtn();
+      if (on) hideAudioHint();
     });
   }
   // arrancar música con la primera interacción del usuario (política de autoplay)
+  const audioHint = document.getElementById('audio-hint');
+  const hideAudioHint = () => { if (audioHint) audioHint.classList.add('hidden'); };
+  const showAudioHint = () => { if (audioHint && isMusicEnabled()) audioHint.classList.remove('hidden'); };
   const unlockOnce = () => {
     unlockAudio();
+    hideAudioHint();
     window.removeEventListener('pointerdown', unlockOnce);
     window.removeEventListener('touchstart', unlockOnce);
     window.removeEventListener('keydown', unlockOnce);
@@ -46,6 +51,12 @@ function init() {
   window.addEventListener('pointerdown', unlockOnce, { passive: true });
   window.addEventListener('touchstart', unlockOnce, { passive: true });
   window.addEventListener('keydown', unlockOnce);
+  // Intento automático (funcionará en algunos navegadores/escritorio; en móvil mostrará aviso)
+  tryStartMusic();
+  setTimeout(() => {
+    if (isMusicEnabled() && !isMusicPlaying()) showAudioHint();
+    else hideAudioHint();
+  }, 1200);
 
   if (isAdminMode()) {
     const resetBtn = document.getElementById('admin-reset');

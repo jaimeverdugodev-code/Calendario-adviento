@@ -56,31 +56,30 @@ export function startGame(container, config, onWin) {
   let cityReady = false;
   cityImg.onload = () => { cityReady = true; };
   cityImg.src = 'public/bg-village.svg';
+  let cityX = 0;
 
-  function drawBackground() {
+  function drawBackground(dt = 1) {
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, '#1b2742');
     g.addColorStop(1, '#2a3d2f');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
 
-    // ciudad de fondo moviéndose
+    // ciudad de fondo moviéndose (ligera, sin recalcular escalas cada frame)
     if (cityReady && cityImg.naturalWidth) {
       const scale = Math.max(H / cityImg.naturalHeight, (W * 1.2) / cityImg.naturalWidth);
       const dw = cityImg.naturalWidth * scale;
       const dh = cityImg.naturalHeight * scale;
       const y = H - dh + 10;
-      const offset = (frames * 0.6) % dw;
-      ctx.globalAlpha = 0.45;
-      ctx.drawImage(cityImg, -offset, y, dw, dh);
-      ctx.drawImage(cityImg, -offset + dw, y, dw, dh);
+      cityX = (cityX + 0.35 * dt) % dw;
+      ctx.globalAlpha = 0.35;
+      ctx.drawImage(cityImg, -cityX, y, dw, dh);
+      ctx.drawImage(cityImg, -cityX + dw, y, dw, dh);
       ctx.globalAlpha = 1;
-      ctx.fillStyle = 'rgba(27,13,18,0.25)';
-      ctx.fillRect(0, 0, W, H);
     }
 
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    for (let i = 0; i < 30; i++) {
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    for (let i = 0; i < 18; i++) {
       const sx = (i * 97 + frames * 0.08) % W;
       const sy = (i * 53) % (H * 0.6);
       ctx.fillRect(sx, sy, 2, 2);
@@ -204,7 +203,7 @@ export function startGame(container, config, onWin) {
     const dt = lastTime ? Math.min((time - lastTime) / (1000 / 60), 2.2) : 1;
     lastTime = time;
     frames += dt;
-    drawBackground();
+    drawBackground(dt);
 
     if (started && !ended) {
       bird.vy += gravity * dt;
