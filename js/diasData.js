@@ -1,9 +1,9 @@
-Ôªø// Configuraci√≥n central del Calendario de Adviento (editable)
-// Cambia aqu√≠ t√≠tulos, config de juegos, fotos y mensajes finales.
+// ConfiguraciÛn central del Calendario de Adviento (editable)
+// Cambia aquÌ tÌtulos, config de juegos, fotos y mensajes finales.
 
 export const CONFIG = {
   iniciales: "J & B", // Ej: "A & B"
-  subtitulo: "24 d√≠as contigo",
+  subtitulo: "24 dÌas contigo",
   avatars: {
     me: "public/avatars/yo1.png",
     partner: "public/avatars/pareja.png",
@@ -16,15 +16,15 @@ export const DIAS = [
     title: "Flappy Love",
     gameId: "day01",
     gameConfig: { target: 12 },
-    photo: "public/fotos/dia01.svg",
-    message: "Cada vuelo a tu lado es mi aventura favorita. ¬°Feliz d√≠a 1!"
+    photo: "public/fotos/dia01.jpg",
+    message: "Cada vuelo a tu lado es mi aventura favorita. °Feliz dÌa 1!"
   },
   {
     day: 2,
     title: "Rasca y Gana",
     gameId: "day02",
     gameConfig: { revealPercent: 55 },
-    photo: "public/fotos/dia02.svg",
+    photo: "public/fotos/dia02.jpg",
     message: "Debajo de cualquier capa siempre te encuentro a ti."
   },
   {
@@ -33,28 +33,28 @@ export const DIAS = [
     gameId: "day03",
     gameConfig: {
       questions: [
-        { q: "¬øCu√°l es mi plan favorito?", options: ["Jugar a la Compu", "Fumar", "Momart"], answer: 0 },
-        { q: "¬øCu√°l es mi comida favorita?", options: ["Pizza", "Kebab", "No tengo"], answer: 2 },
-        { q: "¬øComo me llamo en el WOW?", options: ["Gre√±aMaster Aura", "DemaciaDosexy", "DedeaSapos"], answer: 0 }
+        { q: "øCu·l es mi plan favorito?", options: ["Jugar a la Compu", "Fumar", "Momart"], answer: 0 },
+        { q: "øCu·l es mi comida favorita?", options: ["Pizza", "Kebab", "No tengo"], answer: 2 },
+        { q: "øComo me llamo en el WOW?", options: ["GreÒaMaster Aura", "DemaciaDosexy", "DedeaSapos"], answer: 0 }
       ]
     },
-    photo: "public/fotos/dia03.svg",
-    message: "Nadie conoce nuestra historia como t√∫."
+    photo: "public/fotos/dia03.jpg",
+    message: "Nadie conoce nuestra historia como t˙."
   },
   {
     day: 4,
-    title: "Infla el Coraz√≥n",
+    title: "Infla el CorazÛn",
     gameId: "day04",
     gameConfig: { durationMs: 10000, targetTaps: 150 },
-    photo: "public/fotos/dia04.svg",
-    message: "Mi coraz√≥n late m√°s fuerte cuando est√°s cerca."
+    photo: "public/fotos/dia04.jpg",
+    message: "Mi corazÛn late m·s fuerte cuando est·s cerca."
   },
   {
     day: 5,
     title: "Memory de Recuerdos",
     gameId: "day05",
-    gameConfig: { pairs: ["‚ù§Ô∏è", "üéÑ", "‚≠ê", "üéÅ", "‚òÉÔ∏è", "üíå"] },
-    photo: "public/fotos/dia05.svg",
+    gameConfig: { pairs: ["??", "??", "?", "??", "??", "??"] },
+    photo: "public/fotos/dia05.jpg",
     message: "Cada recuerdo contigo es mi favorito."
   },
   {
@@ -62,7 +62,7 @@ export const DIAS = [
     title: "Lluvia de Besos",
     gameId: "day06",
     gameConfig: { targetHearts: 20 },
-    photo: "public/fotos/dia06.svg",
+    photo: "public/fotos/dia06.png",
     message: "Contigo hasta la lluvia sabe a besos."
   },
   {
@@ -70,47 +70,47 @@ export const DIAS = [
     title: "Adivina que soy",
     gameId: "day07",
     gameConfig: { word: "QUESO" },
-    photo: "public/fotos/dia07.svg",
-    message: "Soy suave, rico y siempre te hago sonre√≠r."
+    photo: "public/fotos/dia07.jpeg",
+    message: "Soy suave, rico y siempre te hago sonreÌr."
   },
   {
     day: 8,
     title: "Gira el Recuerdo",
     gameId: "day08",
     gameConfig: { grid: 3 },
-    photo: "public/fotos/dia08.svg",
+    photo: "public/fotos/dia08.jpg",
     message: "Contigo todo encaja, pieza a pieza."
   },
   {
     day: 9,
-    title: "¬°Atrapa al Elfo!",
+    title: "°Atrapa al Elfo!",
     gameId: "day09",
     gameConfig: { targetHits: 20 },
-    photo: "public/fotos/dia09.svg",
-    message: "Siempre te atrapar√≠a a ti, una y otra vez."
+    photo: "public/fotos/dia09.png",
+    message: "Siempre te atraparÌa a ti, una y otra vez."
   },
   {
     day: 10,
     title: "Para el Tiempo",
     gameId: "day10",
     gameConfig: { min: 5.0, max: 5.10 },
-    photo: "public/fotos/dia10.svg",
+    photo: "public/fotos/dia10.jpeg",
     message: "El mejor momento es cualquiera si es contigo."
   },
   {
     day: 11,
-    title: "Decora el √Årbol",
+    title: "Decora el ¡rbol",
     gameId: "day11",
     gameConfig: { ornaments: 6 },
-    photo: "public/fotos/dia11.svg",
-    message: "Cada adorno es un motivo m√°s para sonre√≠r contigo."
+    photo: "public/fotos/dia11.jpeg",
+    message: "Cada adorno es un motivo m·s para sonreÌr contigo."
   },
   {
     day: 12,
-    title: "Pesca Navide√±a",
+    title: "Pesca NavideÒa",
     gameId: "day12",
     gameConfig: { target: 10 },
-    photo: "public/fotos/dia12.svg",
+    photo: "public/fotos/dia12.jpg",
     message: "Has pescado los mejores tesoros: nuestros momentos."
   },
   {
@@ -118,23 +118,23 @@ export const DIAS = [
     title: "Esquiva la Ventisca",
     gameId: "day13",
     gameConfig: { durationMs: 45000 },
-    photo: "public/fotos/dia13.svg",
+    photo: "public/fotos/dia13.jpg",
     message: "Juntos esquivamos cualquier tormenta."
   },
   {
     day: 14,
-    title: "Sim√≥n Dice Navide√±o",
+    title: "SimÛn Dice NavideÒo",
     gameId: "day14",
     gameConfig: { steps: 6 },
-    photo: "public/fotos/dia14.svg",
-    message: "Mi coraz√≥n sigue tu ritmo."
+    photo: "public/fotos/dia14.png",
+    message: "Mi corazÛn sigue tu ritmo."
   },
   {
     day: 15,
     title: "Puzle Deslizante",
     gameId: "day15",
     gameConfig: { grid: 3 },
-    photo: "public/fotos/dia15.svg",
+    photo: "public/fotos/dia15.jpg",
     message: "Eres la pieza que completa mi vida."
   },
   {
@@ -142,15 +142,15 @@ export const DIAS = [
     title: "Rompeladrillos de Amor",
     gameId: "day16",
     gameConfig: { rows: 3, cols: 6 },
-    photo: "public/fotos/dia16.svg",
-    message: "Romper√≠a mil muros por verte sonre√≠r."
+    photo: "public/fotos/dia16.png",
+    message: "RomperÌa mil muros por verte sonreÌr."
   },
   {
     day: 17,
     title: "Une las Estrellas",
     gameId: "day17",
     gameConfig: { points: 10 },
-    photo: "public/fotos/dia17.svg",
+    photo: "public/fotos/dia17.jpg",
     message: "Entre todas las estrellas, te elijo a ti."
   },
   {
@@ -158,15 +158,15 @@ export const DIAS = [
     title: "Sopa de Letras",
     gameId: "day18",
     gameConfig: { size: 10, words: ["AMOR", "BESO", "NIEVE", "CHICHARRON", "NAVIDAD"] },
-    photo: "public/fotos/dia18.svg",
-    message: "En cualquier sopa de letras te encontrar√≠a."
+    photo: "public/fotos/dia18.jpg",
+    message: "En cualquier sopa de letras te encontrarÌa."
   },
   {
     day: 19,
     title: "Salto a las Nubes",
     gameId: "day19",
     gameConfig: { targetHeight: 4200 },
-    photo: "public/fotos/dia19.svg",
+    photo: "public/fotos/dia19.jpeg",
     message: "Contigo llego hasta las estrellas."
   },
   {
@@ -174,7 +174,7 @@ export const DIAS = [
     title: "Cupido al Blanco",
     gameId: "day20",
     gameConfig: { targetHits: 10 },
-    photo: "public/fotos/dia20.svg",
+    photo: "public/fotos/dia20.jpg",
     message: "Tu amor siempre da en el blanco."
   },
   {
@@ -182,20 +182,20 @@ export const DIAS = [
     title: "Torre de Regalos",
     gameId: "day21",
     gameConfig: { targetStack: 10 },
-    photo: "public/fotos/dia21.svg",
-    message: "Construyamos juntos lo m√°s bonito."
+    photo: "public/fotos/dia21.png",
+    message: "Construyamos juntos lo m·s bonito."
   },
   {
     day: 22,
     title: "Laberinto de Invierno",
     gameId: "day22",
     gameConfig: {},
-    photo: "public/fotos/dia22.svg",
+    photo: "public/fotos/dia22.png",
     message: "No importa el camino si me lleva a ti."
   },
   {
     day: 23,
-    title: "Convence al Elfo Gru√±√≥n",
+    title: "Convence al Elfo GruÒÛn",
     gameId: "day23",
     gameConfig: {
       herName: "[NOMBRE_ELLA]",
@@ -203,15 +203,15 @@ export const DIAS = [
       // La clave OpenAI se configura en Vercel como OPENAI_API_KEY (lado servidor, /api/chat).
       // No pongas apiKey en el cliente.
     },
-    photo: "public/fotos/dia23.svg",
-    message: "Hasta el elfo gru√±√≥n se rinde ante tu encanto."
+    photo: "public/fotos/dia23.png",
+    message: "Hasta el elfo gruÒÛn se rinde ante tu encanto."
   },
   {
     day: 24,
     title: "El Regalo de Nochebuena",
     gameId: "day24",
     gameConfig: { phases: 3 },
-    photo: "public/fotos/dia24.svg",
-    message: "T√∫ eres mi mejor regalo, hoy y siempre. Feliz Nochebuena."
+    photo: "public/fotos/dia24.jpg",
+    message: "T˙ eres mi mejor regalo, hoy y siempre. Feliz Nochebuena."
   }
 ];
