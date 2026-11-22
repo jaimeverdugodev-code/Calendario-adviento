@@ -177,8 +177,11 @@ export function startGame(container, config, onWin) {
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('keyup', onKeyUp);
 
-  function loop() {
-    if (lostFlash > 0) lostFlash--;
+  let lastTime = 0;
+  function loop(time = 0) {
+    const dt = lastTime ? Math.min((time - lastTime) / (1000 / 60), 2) : 1;
+    lastTime = time;
+    if (lostFlash > 0) lostFlash -= dt;
     if (!won) {
       let dx = 0, dy = 0;
       if (moveState.left) dx -= 1;
@@ -187,7 +190,7 @@ export function startGame(container, config, onWin) {
       if (moveState.down) dy += 1;
       if (dx || dy) {
         const len = Math.hypot(dx, dy) || 1;
-        tryMoveBy((dx / len) * moveSpeed, (dy / len) * moveSpeed);
+        tryMoveBy((dx / len) * moveSpeed * dt, (dy / len) * moveSpeed * dt);
       }
     }
     draw();

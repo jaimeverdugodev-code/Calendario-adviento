@@ -1,4 +1,4 @@
-const CACHE_NAME = 'adviento-v32';
+const CACHE_NAME = 'adviento-v36';
 const ASSETS = [
   './',
   './index.html',

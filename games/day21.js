@@ -72,10 +72,13 @@ export function startGame(container, config, onWin) {
     }
   }
 
-  function update() {
+  let lastTime = 0;
+  function update(time = 0) {
     if (!running) return;
+    const dt = lastTime ? Math.min((time - lastTime) / (1000 / 60), 2) : 1;
+    lastTime = time;
     if (!won && !lost && current) {
-      current.x += dir * speed;
+      current.x += dir * speed * dt;
       if (current.x + current.w > W) { current.x = W - current.w; dir = -1; }
       if (current.x < 0) { current.x = 0; dir = 1; }
     }

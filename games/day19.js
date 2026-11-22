@@ -94,15 +94,18 @@ export function startGame(container, config, onWin) {
 
   function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 
-  function update() {
+  let lastTime = 0;
+  function update(time = 0) {
     if (!running) return;
+    const dt = lastTime ? Math.min((time - lastTime) / (1000 / 60), 2) : 1;
+    lastTime = time;
     if (!won && !lost) {
       const tiltDir = Math.max(-1, Math.min(1, tiltX / 25));
       // invertido: inclinar izquierda mueve izquierda en pantalla
       const dir = Math.abs(tiltDir) > 0.08 ? -tiltDir : keyboardDir;
-      player.x += dir * 5.2;
-      player.vy += gravity;
-      player.y += player.vy;
+      player.x += dir * 5.2 * dt;
+      player.vy += gravity * dt;
+      player.y += player.vy * dt;
       if (player.x < -20) player.x = W+20;
       if (player.x > W+20) player.x = -20;
 

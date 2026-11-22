@@ -74,11 +74,14 @@ export function startGame(container, config, onWin) {
     }
   }
 
-  function update() {
+  let lastTime = 0;
+  function update(time = 0) {
     if (!running) return;
+    const dt = lastTime ? Math.min((time - lastTime) / (1000 / 60), 2) : 1;
+    lastTime = time;
     if (!ended) {
       const elapsed = Date.now() - start;
-      for (const f of flakes) f.y += f.vy;
+      for (const f of flakes) f.y += f.vy * dt;
       // collision
       const px = lanes[lane], py = H - 60, pr = 22;
       for (const f of flakes) {

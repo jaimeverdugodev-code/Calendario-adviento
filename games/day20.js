@@ -32,7 +32,7 @@ export function startGame(container, config, onWin) {
     const r = 18 + Math.random() * 6;
     const side = Math.random() < 0.5 ? -1 : 1;
     const y = 65 + Math.random() * (H * 0.42);
-    const speed = 1.7 + spawned * 0.22; // progresivo, controlado
+    const speed = 1.9 + spawned * 0.18; // progresivo, controlado
     targets.push({
       x: side < 0 ? -r - 12 : W + r + 12,
       y,
@@ -205,6 +205,11 @@ export function startGame(container, config, onWin) {
       }
 
       if (!won && !ended && targets.length === 0 && spawned < targetHits) spawnTarget();
+      if (!won && !ended && score < targetHits && spawned >= targetHits && targets.length === 0) {
+        // seguridad: si por cualquier caso no quedan objetivos pendientes, repon uno
+        spawned = targetHits - 1;
+        spawnTarget();
+      }
 
       for (let i = pops.length - 1; i >= 0; i--) {
         pops[i].y -= 0.6 * dt;

@@ -144,6 +144,9 @@ export function sfx(type = 'tap') {
     case 'coin':
       tone(988, 0, 0.1, 0.1, 'sine');
       tone(1319, 0.08, 0.14, 0.1, 'sine'); break;
+    case 'pipe':
+      tone(880, 0, 0.07, 0.09, 'sine');
+      tone(1175, 0.05, 0.09, 0.08, 'sine'); break;
     case 'success':
       tone(784, 0, 0.12, 0.1, 'sine');
       tone(988, 0.1, 0.12, 0.1, 'sine');

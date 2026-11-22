@@ -1,12 +1,15 @@
 // Día 9: ¡Atrapa al Elfo! - 6 chimeneas, toca 10 veces
 import { getMyAvatarForDay } from '../js/avatars.js';
+import { sfx } from '../js/audio.js';
 
 export function startGame(container, config, onWin) {
   const target = (config.gameConfig && config.gameConfig.targetHits) || 10;
   let score = 0;
+  let lives = 3;
   let active = -1;
   let timer = null;
   let running = true;
+  let round = 0;
   const meSrc = getMyAvatarForDay(config.day);
 
   const soundFiles = ['aplastar', 'golpe', 'sonido'];
@@ -40,8 +43,8 @@ export function startGame(container, config, onWin) {
   container.appendChild(root);
 
   const hud = document.createElement('div');
-  hud.style.cssText = 'text-align:center;color:#fff;font-weight:700;font-size:1.1rem;';
-  const updateHud = () => hud.textContent = `Atrapados: ${score} / ${target}`;
+  hud.style.cssText = 'text-align:center;color:#fff;font-weight:700;font-size:1.05rem;';
+  const updateHud = () => { hud.textContent = `Atrapados: ${score} / ${target}  ·  Vidas: ${'❤'.repeat(Math.max(0,lives))}${'♡'.repeat(Math.max(0,3-lives))}`; };
   updateHud();
   root.appendChild(hud);
 
@@ -90,12 +93,25 @@ export function startGame(container, config, onWin) {
     let next = Math.floor(Math.random() * 6);
     if (next === active) next = (next + 1) % 6;
     active = next;
+    round += 1;
     chimneys[active].elf.style.transform = 'translateY(-18%)';
-    const stay = 800 + Math.random() * 400;
+    const stay = Math.max(320, 900 - round * 35 + Math.random() * 180);
     timer = setTimeout(() => {
-      if (active >= 0) chimneys[active].elf.style.transform = 'translateY(140%)';
-      active = -1;
-      timer = setTimeout(showRandom, 250 + Math.random() * 300);
+      if (!running) return;
+      if (active >= 0) {
+        chimneys[active].elf.style.transform = 'translateY(140%)';
+        active = -1;
+        lives = Math.max(0, lives - 1);
+        updateHud();
+        try { sfx('fail'); } catch (e) {}
+        if (lives <= 0) {
+          running = false;
+          hud.textContent = '¡Te quedaste sin vidas! Toca reintentar';
+          return;
+        }
+      }
+      const gap = Math.max(120, 320 - round * 12 + Math.random() * 120);
+      timer = setTimeout(showRandom, gap);
     }, stay);
   }
 

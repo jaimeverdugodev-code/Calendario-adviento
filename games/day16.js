@@ -165,8 +165,11 @@ export function startGame(container, config, onWin) {
     }
   }
 
-  function update() {
+  let lastTime = 0;
+  function update(time = 0) {
     if (!running) return;
+    const dt = lastTime ? Math.min((time - lastTime) / (1000 / 60), 2) : 1;
+    lastTime = time;
     const now = Date.now();
     if (paddle.wideUntil && now > paddle.wideUntil) {
       paddle.w = paddle.baseW;
@@ -179,8 +182,8 @@ export function startGame(container, config, onWin) {
       if (ball.stuck) {
         ball.x = paddle.x + paddle.w / 2; ball.y = paddle.y - ball.r - 2;
       } else {
-        ball.x += ball.vx * ball.speedFactor;
-        ball.y += ball.vy * ball.speedFactor;
+        ball.x += ball.vx * ball.speedFactor * dt;
+        ball.y += ball.vy * ball.speedFactor * dt;
         if (ball.x - ball.r < 0) { ball.x = ball.r; ball.vx *= -1; }
         if (ball.x + ball.r > W) { ball.x = W - ball.r; ball.vx *= -1; }
         if (ball.y - ball.r < 0) { ball.y = ball.r; ball.vy *= -1; }
@@ -207,7 +210,7 @@ export function startGame(container, config, onWin) {
         // buffs falling
         for (let i = buffs.length - 1; i >= 0; i--) {
           const f = buffs[i];
-          f.y += f.vy;
+          f.y += f.vy * dt;
           if (f.y + 10 >= paddle.y && f.y - 10 <= paddle.y + paddle.h && f.x >= paddle.x && f.x <= paddle.x + paddle.w) {
             applyBuff(f.type); buffs.splice(i, 1); continue;
           }

@@ -1,6 +1,14 @@
 // Día 5: Memory de Recuerdos - 3x4 (6 parejas)
 export function startGame(container, config, onWin) {
-  const pairs = (config.gameConfig && config.gameConfig.pairs) || ["❤️","🎄","⭐","🎁","☃️","💌"];
+  const rawPairs = (config.gameConfig && config.gameConfig.pairs) || ["❤️", "🎄", "⭐", "🎁", "☃️", "💌"];
+  const pairs = rawPairs.map((p, idx) => {
+    if (p && typeof p === 'object') {
+      return { id: String(p.id ?? idx), img: p.img || '', emoji: p.emoji || '', label: p.label || '' };
+    }
+    const s = String(p);
+    const isImg = /\.(png|jpg|jpeg|webp|gif|svg)$/i.test(s) || s.startsWith('public/') || s.startsWith('./') || s.startsWith('http');
+    return { id: String(idx), img: isImg ? s : '', emoji: isImg ? '' : s, label: isImg ? `img-${idx}` : s };
+  });
   const items = [...pairs, ...pairs];
   for (let i = items.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -22,13 +30,42 @@ export function startGame(container, config, onWin) {
 
   let first = null, second = null, lock = false, matched = 0;
 
+  function renderFace(card, faceUp) {
+    card.innerHTML = '';
+    if (!faceUp) {
+      const q = document.createElement('span');
+      q.textContent = '?';
+      q.style.cssText = 'font-size:1.8rem;line-height:1;color:#fdf8f5;font-weight:700;';
+      card.appendChild(q);
+      return;
+    }
+    const imgSrc = card.dataset.img || '';
+    const emoji = card.dataset.emoji || '';
+    if (imgSrc) {
+      const im = document.createElement('img');
+      im.src = imgSrc;
+      im.alt = card.dataset.label || 'carta';
+      im.style.cssText = 'width:72%;height:72%;object-fit:contain;pointer-events:none;display:block;';
+      im.onerror = () => { card.textContent = emoji || '❤'; };
+      card.appendChild(im);
+    } else {
+      const span = document.createElement('span');
+      span.textContent = emoji || '❤';
+      span.style.cssText = 'font-size:2rem;line-height:1;';
+      card.appendChild(span);
+    }
+  }
+
   items.forEach((val, i) => {
     const card = document.createElement('button');
     card.type = 'button';
-    card.dataset.value = val;
-    card.dataset.index = i;
-    card.style.cssText = 'border:none;border-radius:12px;background:linear-gradient(160deg,#b81d33,#7a1224);color:transparent;font-size:1.8rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,0.25);border:1px solid rgba(212,175,55,0.4);transition:transform 0.2s,background 0.2s;min-height:0;';
-    card.textContent = val;
+    card.dataset.value = val.id;
+    card.dataset.img = val.img || '';
+    card.dataset.emoji = val.emoji || '';
+    card.dataset.label = val.label || '';
+    card.dataset.index = String(i);
+    card.style.cssText = 'border:none;border-radius:12px;background:linear-gradient(160deg,#b81d33,#7a1224);color:#fdf8f5;font-size:1.8rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,0.25);border:1px solid rgba(212,175,55,0.4);transition:transform 0.2s,background 0.2s;min-height:0;overflow:hidden;padding:6px;';
+    renderFace(card, false);
     card.addEventListener('click', () => flip(card));
     grid.appendChild(card);
   });
@@ -38,10 +75,12 @@ export function startGame(container, config, onWin) {
       card.style.background = 'linear-gradient(160deg,#fdf8f5,#f2c6ce)';
       card.style.color = '#2c1a1d';
       card.style.transform = 'scale(1.02)';
+      renderFace(card, true);
     } else {
       card.style.background = 'linear-gradient(160deg,#b81d33,#7a1224)';
-      card.style.color = 'transparent';
+      card.style.color = '#fdf8f5';
       card.style.transform = '';
+      renderFace(card, false);
     }
   }
 

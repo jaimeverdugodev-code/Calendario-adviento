@@ -164,10 +164,11 @@ button { font-family: inherit; }
 .btn-secondary { background: rgba(253,248,245,0.12); color: #fff; border: 1px solid rgba(212,175,55,0.4); }
 
 /* Reward */
-.reward-modal-inner { background: transparent; border: none; box-shadow: none; align-items: center; justify-content: center; overflow: visible; }
+.reward-modal-inner { background: transparent; border: none; box-shadow: none; align-items: center; justify-content: center; overflow: visible; padding: 8px; }
 .reward-card {
   background: var(--card-cream); color: var(--text-dark);
-  border-radius: 18px; padding: 22px 18px 18px; width: 100%; max-width: 420px;
+  border-radius: 18px; padding: 22px 18px 18px; width: min(92vw, 420px); max-width: 420px;
+  max-height: calc(96dvh - 20px); overflow: auto;
   text-align: center; box-shadow: 0 16px 40px rgba(0,0,0,0.45);
   position: relative; z-index: 2;
 }
@@ -179,12 +180,19 @@ button { font-family: inherit; }
 .polaroid {
   background: #fff; padding: 10px 10px 28px; border-radius: 4px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.18); transform: rotate(-1.5deg);
-  margin: 0 auto 12px; max-width: 280px;
+  margin: 0 auto 12px; width: fit-content; max-width: min(100%, 320px);
 }
-.polaroid img { width: 100%; aspect-ratio: 4/5; object-fit: cover; display: block; background: #eee; }
+.polaroid img { display: block; width: auto; height: auto; max-width: 100%; max-height: min(52dvh, 420px); object-fit: contain; background: #eee; }
 .reward-message { font-size: 1rem; line-height: 1.45; margin: 6px 4px 14px; color: var(--text-dark); }
 .reward-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 .reward-actions .btn-secondary { color: var(--text-dark); border-color: rgba(44,26,29,0.25); background: rgba(44,26,29,0.06); }
+
+@media (max-width: 480px) {
+  .reward-card { padding: 18px 14px 14px; width: min(94vw, 420px); }
+  .reward-congrats { font-size: 1.4rem; }
+  .polaroid { transform: rotate(-1deg); max-width: min(100%, 300px); }
+  .polaroid img { max-height: min(48dvh, 360px); }
+}
 
 /* Confetti */
 .confetti-layer { position: fixed; inset: 0; pointer-events: none; z-index: 60; overflow: hidden; }

@@ -62,6 +62,7 @@ export function startGame(container, config, onWin) {
   let score = 0, lives = 3, raf, frames = 0;
   let dragging = false;
   let lastSpawn = 0;
+  let lastTime = 0;
   const player = { x: W / 2, y: H - 46, w: 58, h: 58 };
   const items = []; // {x,y,vy,type,r}
 
@@ -177,14 +178,16 @@ export function startGame(container, config, onWin) {
 
   function update(nowTs) {
     if (!running) return;
-    frames++;
     const now = nowTs || performance.now();
+    const dt = lastTime ? Math.min((now - lastTime) / (1000 / 60), 2) : 1;
+    lastTime = now;
+    frames += dt;
 
     if (!ended) {
       if (!lastSpawn) lastSpawn = now;
       if (now - lastSpawn > 680) spawn(now);
 
-      for (let i = 0; i < items.length; i++) items[i].y += items[i].vy;
+      for (let i = 0; i < items.length; i++) items[i].y += items[i].vy * dt;
 
       for (let i = items.length - 1; i >= 0; i--) {
         const it = items[i];

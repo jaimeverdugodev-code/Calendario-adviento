@@ -29,22 +29,40 @@ export function startGame(container, config, onWin) {
   const goodTypes = ['🎁', '⭐', '🍬', '🔔', '🧦'];
   const badTypes = ['🪾', '🪨'];
 
+  function makeTreasure(bad) {
+    const r = bad ? 16 : 17;
+    return {
+      x: 30 + Math.random() * (W - 60),
+      y: H * 0.45 + Math.random() * (H * 0.4),
+      r,
+      type: bad ? badTypes[Math.floor(Math.random() * badTypes.length)] : goodTypes[Math.floor(Math.random() * goodTypes.length)],
+      good: !bad,
+      alive: true,
+      vx: (Math.random() * 0.6 + 0.2) * (Math.random() < 0.5 ? -1 : 1)
+    };
+  }
+
+  function ensureBadTreasure() {
+    if (treasures.some(t => t.alive && !t.good)) return;
+    const goodAlive = treasures.find(t => t.alive && t.good);
+    if (goodAlive) {
+      const bad = makeTreasure(true);
+      goodAlive.type = bad.type;
+      goodAlive.good = false;
+      goodAlive.r = bad.r;
+    } else {
+      treasures.push(makeTreasure(true));
+    }
+  }
+
   function spawnTreasures() {
     treasures.length = 0;
     const count = 9;
     for (let i = 0; i < count; i++) {
-      const bad = Math.random() < 0.2;
-      const r = bad ? 16 : 17;
-      treasures.push({
-        x: 30 + Math.random() * (W - 60),
-        y: H * 0.45 + Math.random() * (H * 0.4),
-        r,
-        type: bad ? badTypes[Math.floor(Math.random() * badTypes.length)] : goodTypes[Math.floor(Math.random() * goodTypes.length)],
-        good: !bad,
-        alive: true,
-        vx: (Math.random() * 0.6 + 0.2) * (Math.random() < 0.5 ? -1 : 1)
-      });
+      const bad = Math.random() < 0.25;
+      treasures.push(makeTreasure(bad));
     }
+    ensureBadTreasure();
   }
   spawnTreasures();
 
@@ -180,28 +198,31 @@ export function startGame(container, config, onWin) {
     }
   }
 
+  let lastTime = 0;
   function update(now) {
     if (!running) return;
+    const dt = lastTime ? Math.min((now - lastTime) / (1000 / 60), 2) : 1;
+    lastTime = now;
     if (!ended) {
       // boat movement
-      boatX += boatDir * boatSpeed;
+      boatX += boatDir * boatSpeed * dt;
       if (boatX > W - 40) { boatX = W - 40; boatDir = -1; }
       if (boatX < 40) { boatX = 40; boatDir = 1; }
 
       // treasures drift
       for (const t of treasures) {
         if (!t.alive) continue;
-        t.x += t.vx;
+        t.x += t.vx * dt;
         if (t.x < 20 || t.x > W - 20) t.vx *= -1;
       }
 
       // hook logic
       if (hook.state === 'idle') {
-        hook.swing = (hook.swing || 0) + 0.03;
+        hook.swing = (hook.swing || 0) + 0.03 * dt;
         hook.x = boatX + Math.sin(hook.swing) * 4;
         hook.y = boatY + 18;
       } else if (hook.state === 'down') {
-        hook.len += hook.speed;
+        hook.len += hook.speed * dt;
         hook.x = boatX;
         hook.y = boatY + 18 + hook.len;
         // catch check
@@ -219,7 +240,7 @@ export function startGame(container, config, onWin) {
         }
         if (hook.y > H - 20) hook.state = 'up';
       } else if (hook.state === 'up') {
-        hook.len -= hook.speed * 1.1;
+        hook.len -= hook.speed * 1.1 * dt;
         if (hook.len < 0) hook.len = 0;
         hook.x = boatX;
         hook.y = boatY + 18 + hook.len;
@@ -255,18 +276,11 @@ export function startGame(container, config, onWin) {
           // respawn a treasure to keep pool
           const aliveCount = treasures.filter(t => t.alive).length;
           if (aliveCount < 6) {
-            const bad = Math.random() < 0.2;
-            const r = bad ? 16 : 17;
-            treasures.push({
-              x: 30 + Math.random() * (W - 60),
-              y: H * 0.48 + Math.random() * (H * 0.38),
-              r,
-              type: bad ? badTypes[Math.floor(Math.random() * badTypes.length)] : goodTypes[Math.floor(Math.random() * goodTypes.length)],
-              good: !bad,
-              alive: true,
-              vx: (Math.random() * 0.6 + 0.2) * (Math.random() < 0.5 ? -1 : 1)
-            });
+            const noBadAlive = !treasures.some(t => t.alive && !t.good);
+            const bad = noBadAlive ? true : Math.random() < 0.25;
+            treasures.push(makeTreasure(bad));
           }
+          ensureBadTreasure();
           resetHook();
         }
       }
