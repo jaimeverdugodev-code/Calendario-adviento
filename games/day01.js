@@ -25,11 +25,11 @@ export function startGame(container, config, onWin) {
 
   const bird = { x: W * 0.28, y: H * 0.45, r: 18, vy: 0 };
   // Física ajustada para sentirse igual en móvil/desktop (independiente de FPS)
-  const gravity = 0.12;
-  const flap = -4.2;
+  const gravity = 0.32;
+  const flap = -6.0;
   const pipes = [];
   const baseGap = 190;
-  const minGap = 115;
+  const minGap = 85;
   const pipeW = 40;
   const speed = 4;
   const spawnInterval = 105 * (1000 / 60);
@@ -47,7 +47,7 @@ export function startGame(container, config, onWin) {
 
   function spawnPipe() {
     const margin = 70;
-    const gap = Math.max(minGap, baseGap - score * 7);
+    const gap = Math.max(minGap, baseGap - score * 12);
     const topH = margin + Math.random() * (H - gap - margin * 2 - 20);
     pipes.push({ x: W + 20, top: topH, gap, passed: false });
   }
