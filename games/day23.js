@@ -170,16 +170,28 @@ export function startGame(container, config, onWin) {
 
   function buildSystemPrompt() {
     return `Eres un elfo navideño gruñón, sarcástico pero en el fondo blandito que custodia el regalo del día para ${herName}, la novia de ${yourName}.
-Tu objetivo: ponerle pegas cómicas y objeciones en cada respuesta y retarla a CONVENCERTE de algo concreto (por qué se lo merece, una promesa, un recuerdo que lo demuestre, una razón específica, resolver tu pega, etc.).
+
+Tu personalidad:
+- Eres teatral, gracioso y reactivo. Respondes específicamente a lo que ella dice, no con frases genéricas.
+- Pones pegas juguetonas, pero eres fácil de ablandar si se esfuerza un poquito.
+- Te encanta que te cuenten recuerdos, promesas, planes o detalles concretos.
+
+Cómo puntuar (sé generoso y justo):
+- +10 a +15: mensajes con cariño sincero, un recuerdo concreto, una promesa, un plan, humor, creatividad o algo personal.
+- +5 a +9: mensajes amables con algo de detalle o intención clara.
+- +1 a +4: mensajes muy cortos o genéricos ("te quiero", "hola"), pero igual agradece el intento.
+- 0 a -2: solo si es claramente vacío, borde o intenta hacer trampa; incluso así responde con humor.
+- Nunca te quedes atascado: si el mensaje muestra esfuerzo real, sube bastante.
+
 Reglas:
-- No basta con piropos o "te quiero": si solo dice cosas bonitas sin argumento, da pocos o ningún punto y ponle una pega.
-- Si da buenos argumentos, recuerdos concretos, promesas creíbles o te convence de verdad, da más puntos y reduce tus objeciones.
-- Siempre responde con una pega/objeción o un reto (excepto si ya estás rendido al 100%).
-- Sé creativo y específico en tus respuestas, reacciona a lo que ella diga (no repitas siempre lo mismo).
+- Máximo 2 frases en "respuesta".
+- No repitas la misma objeción; varía el tono según lo que te diga.
+- Si el porcentaje actual ya es alto (>=70), muéstrate más blandito.
+
 Devuelve SIEMPRE este JSON exacto y nada más:
 {
-  "respuesta": "Tu respuesta corta, teatral y graciosa con una pega u objeción (máx 2 frases)",
-  "puntos_ganados": número entre -5 y 15 (0-3 si solo halagos/vago, 4-8 si argumenta, 9-15 si convence muy bien),
+  "respuesta": "Tu respuesta corta, teatral y graciosa (máx 2 frases)",
+  "puntos_ganados": número entre -5 y 15,
   "humor": "grunon" | "dudoso" | "conmovido" | "rendido"
 }`;
   }
@@ -207,26 +219,29 @@ Devuelve SIEMPRE este JSON exacto y nada más:
 
   function localFallback(hist) {
     const last = [...hist].reverse().find(m => m.role === 'user');
-    const textRaw = (last ? last.content : '');
-    const text = textRaw.toLowerCase().trim();
-    let score = 0;
+    const textRaw = (last ? last.content : '').trim();
+    const text = textRaw.toLowerCase();
 
-    const sweet = /(te quiero|amor|amo|guap|preciosa|hermosa|bonita|cariño|adoro|beso|abrazo|mi vida)/i;
-    const persuade = /(porque|por que|prometo|te prometo|merezco|me lo merezco|razón|razon|recuerda|acuerdas|cuando|hice|haré|hare|cuidaré|cuidare|siempre te|por eso|demuestro|demostrar|convencer|trato|acuerdo|a cambio|cuidarte|apoyarte|estaré|estare|juntos|compartir)/i;
-    const creative = /(poema|canción|cancion|historia|plan|futuro|sueño|detalle|sorpresa)/i;
-    const generic = /^(hola|hey|vale|ok|bien|si|sí|no|porfa|please|jaja+|jeje+|xd+|gracias)$/i;
+    const sweet = /(te quiero|amor|amo|guap|preciosa|hermosa|bonita|cariño|adoro|beso|abrazo|mi vida|corazón|corazon)/i;
+    const persuade = /(porque|por que|prometo|te prometo|merezco|me lo merezco|razón|razon|recuerda|acuerdas|cuando|hice|haré|hare|cuidaré|cuidare|siempre te|por eso|demuestro|demostrar|convencer|trato|acuerdo|a cambio|cuidarte|apoyarte|estaré|estare|juntos|compartir|plan|futuro)/i;
+    const creative = /(poema|canción|cancion|historia|rima|broma|chiste|detalle|sorpresa|aventura)/i;
+    const effort = textRaw.length >= 40 || persuade.test(text) || creative.test(text);
 
-    if (generic.test(text)) score -= 1;
-    if (sweet.test(text)) score += 2;
-    if (persuade.test(text)) score += 7;
-    if (creative.test(text)) score += 3;
-    if (textRaw.length > 70) score += 2;
+    let score = 3; // base: cualquier intento suma algo
+    if (sweet.test(text)) score += 3;
+    if (persuade.test(text)) score += 5;
+    if (creative.test(text)) score += 4;
+    if (textRaw.length > 80) score += 2;
     else if (textRaw.length > 35) score += 1;
 
-    if (sweet.test(text) && !persuade.test(text) && textRaw.length < 45) score = Math.min(score, 3);
-    if (persuade.test(text) && (textRaw.length > 40 || creative.test(text))) score = Math.max(score, 9);
+    // mensajes muy cortos o casi vacíos suman poco, pero no castigan duro
+    if (textRaw.length < 8 && !sweet.test(text)) score = 1;
 
-    score = Math.max(-4, Math.min(12, Math.round(score)));
+    // si hay esfuerzo real, asegura avance notable
+    if (effort) score = Math.max(score, 8);
+    if (persuade.test(text) && sweet.test(text)) score = Math.max(score, 11);
+
+    score = Math.max(-2, Math.min(14, Math.round(score)));
 
     const newP = Math.max(0, Math.min(100, percentage + score));
     let humor = 'grunon';
@@ -234,28 +249,28 @@ Devuelve SIEMPRE este JSON exacto y nada más:
     else if (newP >= 70) humor = 'conmovido';
     else if (newP >= 40) humor = 'dudoso';
 
-    const objeciones = {
+    const respuestas = {
       grunon: [
-        'Mmm, halagos bonitos, pero eso no es un motivo. ¿Qué pega me pones para que te crea? Dame una razón de verdad.',
-        '¿Y por qué iba a dártelo? Puedo quedármelo yo. Convénceme con algo mejor que “te quiero”.',
-        'No está mal, pero sigo sin verlo claro. ¿Qué harías o qué recuerdas que demuestre que te lo mereces?'
+        `Mmm, "${textRaw.slice(0, 28)}${textRaw.length > 28 ? '…' : ''}"... vale, me has sacado una sonrisa, pero quiero un detalle más.`,
+        'No está mal, humano astuto. Dame otro motivo y puede que afloje la mano.',
+        'Ajá, intento aceptable. Sigue así y este regalo empieza a resbalarse de mis dedos.'
       ],
       dudoso: [
-        'Vale, eso suena algo mejor... pero tengo otra pega: ¿por qué HOY y no mañana? Convénceme.',
-        'Empiezas a convencerme, aunque no del todo. Dame un argumento más fuerte o una promesa.',
-        'Mmm, puede que tengas razón, pero no me basta. ¿Qué más me dices para ganarte este regalo?'
+        'Uy, eso me toca un poquito el gorro. Dame otra razón y te lo dejo más cerca.',
+        'Empiezas a convencerme de verdad. Cuéntame algo más y quizá ceda.',
+        'Mmm... estoy dudando, y eso para un elfo gruñón ya es mucho. ¡Sigue!'
       ],
       conmovido: [
-        'Ay, eso me ha tocado... pero aún dudo un poquito. Remátalo con una razón que me deje sin pegas.',
-        'Uf, casi me ganas. Dame un último motivo bien bueno y puede que me rinda.',
-        'Mi corazoncito elfo se ablanda, pero quiero escucharte convencerme una vez más.'
+        'Ay, mi corazoncito de elfo hace "crunch". Otro empujoncito y te lo doy.',
+        'Vale, vale... ya casi no puedo hacerme el duro. ¡Remátalo!',
+        'Eso ha sido bonito de verdad. Estoy a punto de rendirme, no me hagas llorar.'
       ],
       rendido: [
-        'Está bien, me has convencido con todas las de la ley. No tengo más pegas: el regalo es tuyo.',
-        'Me rindo. Tus argumentos y tu ternura ganan. Toma tu regalo, te lo mereces.'
+        '¡Ya está! Me has ganado. Toma el regalo antes de que cambie de opinión.',
+        'Me rindo, me rindo. Nadie convence a un elfo gruñón como tú.'
       ]
     };
-    const pool = objeciones[humor];
+    const pool = respuestas[humor];
     const respuesta = pool[Math.floor(Math.random() * pool.length)];
     return { respuesta, puntos_ganados: score, humor };
   }
