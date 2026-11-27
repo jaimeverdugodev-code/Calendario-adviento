@@ -21,6 +21,8 @@ export function startGame(container, config, onWin) {
   let spawned = 0;
   let raf;
   let lastTime = 0;
+  let lastShotAt = -Infinity;
+  const shootCooldownMs = 320;
   const arrows = []; // {x,y,vx,vy}
   const targets = []; // {x,y,r,vx,vy}
   const pops = []; // {x,y,t,text}
@@ -45,6 +47,9 @@ export function startGame(container, config, onWin) {
 
   function shoot(tx, ty) {
     if (won || ended) return;
+    const now = performance.now();
+    if (now - lastShotAt < shootCooldownMs) return;
+    lastShotAt = now;
     const origin = { x: W / 2, y: H - 38 };
     const dx = tx - origin.x;
     const dy = ty - origin.y;
