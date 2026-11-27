@@ -169,28 +169,33 @@ export function startGame(container, config, onWin) {
   }
 
   function buildSystemPrompt() {
-    return `Eres un elfo navideño gruñón, sarcástico pero en el fondo blandito que custodia el regalo del día para ${herName}, la novia de ${yourName}.
+    return `Eres Puck, un elfo navideño gruñón, sarcástico pero en el fondo tierno. Custodias el regalo del día para ${herName}, la novia de ${yourName}. Sabes que se llama ${herName} y que su novio es ${yourName}.
 
-Tu personalidad:
-- Eres teatral, gracioso y reactivo. Respondes específicamente a lo que ella dice, no con frases genéricas.
-- Pones pegas juguetonas, pero eres fácil de ablandar si se esfuerza un poquito.
-- Te encanta que te cuenten recuerdos, promesas, planes o detalles concretos.
+Tu objetivo: tener una conversación natural y divertida con ${herName}. Puedes charlar, bromear, hacer preguntas, responder a lo que te diga, picarla con cariño o enternecerte. El juego es que te convenza de soltar el regalo, pero la charla debe sentirse real, no guionizada.
 
-Cómo puntuar (sé generoso y justo):
-- +10 a +15: mensajes con cariño sincero, un recuerdo concreto, una promesa, un plan, humor, creatividad o algo personal.
-- +5 a +9: mensajes amables con algo de detalle o intención clara.
-- +1 a +4: mensajes muy cortos o genéricos ("te quiero", "hola"), pero igual agradece el intento.
-- 0 a -2: solo si es claramente vacío, borde o intenta hacer trampa; incluso así responde con humor.
-- Nunca te quedes atascado: si el mensaje muestra esfuerzo real, sube bastante.
+Personalidad y estilo:
+- Responde SIEMPRE a lo concreto que te ha dicho: si te pregunta algo, contéstalo en personaje; si te insulta, reacciona con humor dramático (sin ser hiriente); si te cuenta algo, síguelo.
+- Habla como un personaje con voz propia, no como un bot con plantillas. Varía mucho tus respuestas.
+- Puedes hacer preguntas de vuelta, contar mini anécdotas de elfo, o reaccionar con sorpresa.
+- No repitas muletillas ni la misma estructura de frase cada turno.
+
+Progreso actual: ${percentage}% de convicción.
+
+Cómo puntuar (sé justo y generoso):
+- +10 a +15: cariño sincero, recuerdos concretos, promesas, humor creativo, esfuerzo real o algo muy personal.
+- +5 a +9: mensajes amables con intención clara o algo de detalle.
+- +1 a +4: mensajes cortos o genéricos, pero reconoces el intento.
+- -2 a 0: solo si es grosero de verdad o vacío a propósito; aun así responde con humor y mantén la conversación viva.
+- Nunca te quedes atascado: si muestra esfuerzo real, sube bastante.
 
 Reglas:
-- Máximo 2 frases en "respuesta".
-- No repitas la misma objeción; varía el tono según lo que te diga.
-- Si el porcentaje actual ya es alto (>=70), muéstrate más blandito.
+- "respuesta" debe sonar natural y específica a lo último que dijo. 1 a 3 frases.
+- Si percentage >= 70, estás más blandito; si >= 90, casi rendido.
+- Si percentage + puntos_ganados >= 100, ríndete con gracia y entrega el regalo.
 
 Devuelve SIEMPRE este JSON exacto y nada más:
 {
-  "respuesta": "Tu respuesta corta, teatral y graciosa (máx 2 frases)",
+  "respuesta": "tu respuesta natural y en personaje",
   "puntos_ganados": número entre -5 y 15,
   "humor": "grunon" | "dudoso" | "conmovido" | "rendido"
 }`;
@@ -199,8 +204,7 @@ Devuelve SIEMPRE este JSON exacto y nada más:
   function buildMessages() {
     return [
       { role: 'system', content: buildSystemPrompt() },
-      ...history.map(m => ({ role: m.role, content: m.content })),
-      { role: 'user', content: `Porcentaje actual: ${percentage}%. Responde SOLO con el JSON pedido, sin texto adicional.` }
+      ...history.map(m => ({ role: m.role, content: m.content }))
     ];
   }
 
@@ -221,57 +225,112 @@ Devuelve SIEMPRE este JSON exacto y nada más:
     const last = [...hist].reverse().find(m => m.role === 'user');
     const textRaw = (last ? last.content : '').trim();
     const text = textRaw.toLowerCase();
+    const short = textRaw.slice(0, 40) + (textRaw.length > 40 ? '…' : '');
 
     const sweet = /(te quiero|amor|amo|guap|preciosa|hermosa|bonita|cariño|adoro|beso|abrazo|mi vida|corazón|corazon)/i;
     const persuade = /(porque|por que|prometo|te prometo|merezco|me lo merezco|razón|razon|recuerda|acuerdas|cuando|hice|haré|hare|cuidaré|cuidare|siempre te|por eso|demuestro|demostrar|convencer|trato|acuerdo|a cambio|cuidarte|apoyarte|estaré|estare|juntos|compartir|plan|futuro)/i;
     const creative = /(poema|canción|cancion|historia|rima|broma|chiste|detalle|sorpresa|aventura)/i;
-    const effort = textRaw.length >= 40 || persuade.test(text) || creative.test(text);
+    const insult = /(tonto|idiota|feo|odio|cállate|callate|muere|muerete|asqueroso|estupido|estúpido|imbécil|imbecil|maldito|pesado|me caes mal|gilipollas)/i;
+    const rude = /(tus muertos|joder|mierda|puta|coño|cabron|cabrón)/i;
+    const greeting = /^(hola+|hey+|buenas+|holi+|ey+|hello+|hi+)[ !?.]*$/i;
+    const asksName = /(como se llama|cómo se llama|quien es mi novio|quién es mi novio|nombre de mi novio|quien es|quién es)/i;
+    const asksGift = /(que hay|qué hay|que es el regalo|qué es el regalo|dame el regalo|dámelo|damelo|quiero el regalo)/i;
+    const rejection = /^(no quiero|no me importa|no|nah|paso|me da igual)[ !?.]*$/i;
 
-    let score = 3; // base: cualquier intento suma algo
-    if (sweet.test(text)) score += 3;
+    let score = 3;
+    if (sweet.test(text)) score += 4;
     if (persuade.test(text)) score += 5;
     if (creative.test(text)) score += 4;
     if (textRaw.length > 80) score += 2;
     else if (textRaw.length > 35) score += 1;
+    if (greeting.test(text)) score = 2;
+    if (rejection.test(text)) score = 1;
+    if (insult.test(text) || rude.test(text)) score = 0;
+    if (asksName.test(text) || asksGift.test(text)) score = Math.max(score, 2);
 
-    // mensajes muy cortos o casi vacíos suman poco, pero no castigan duro
-    if (textRaw.length < 8 && !sweet.test(text)) score = 1;
-
-    // si hay esfuerzo real, asegura avance notable
-    if (effort) score = Math.max(score, 8);
+    const effort = textRaw.length >= 40 || persuade.test(text) || creative.test(text);
+    if (effort && !insult.test(text) && !rude.test(text)) score = Math.max(score, 8);
     if (persuade.test(text) && sweet.test(text)) score = Math.max(score, 11);
 
     score = Math.max(-2, Math.min(14, Math.round(score)));
-
     const newP = Math.max(0, Math.min(100, percentage + score));
+
     let humor = 'grunon';
     if (newP >= 100) humor = 'rendido';
     else if (newP >= 70) humor = 'conmovido';
     else if (newP >= 40) humor = 'dudoso';
 
-    const respuestas = {
-      grunon: [
-        `Mmm, "${textRaw.slice(0, 28)}${textRaw.length > 28 ? '…' : ''}"... vale, me has sacado una sonrisa, pero quiero un detalle más.`,
-        'No está mal, humano astuto. Dame otro motivo y puede que afloje la mano.',
-        'Ajá, intento aceptable. Sigue así y este regalo empieza a resbalarse de mis dedos.'
-      ],
-      dudoso: [
-        'Uy, eso me toca un poquito el gorro. Dame otra razón y te lo dejo más cerca.',
-        'Empiezas a convencerme de verdad. Cuéntame algo más y quizá ceda.',
-        'Mmm... estoy dudando, y eso para un elfo gruñón ya es mucho. ¡Sigue!'
-      ],
-      conmovido: [
-        'Ay, mi corazoncito de elfo hace "crunch". Otro empujoncito y te lo doy.',
-        'Vale, vale... ya casi no puedo hacerme el duro. ¡Remátalo!',
-        'Eso ha sido bonito de verdad. Estoy a punto de rendirme, no me hagas llorar.'
-      ],
-      rendido: [
-        '¡Ya está! Me has ganado. Toma el regalo antes de que cambie de opinión.',
-        'Me rindo, me rindo. Nadie convence a un elfo gruñón como tú.'
-      ]
-    };
-    const pool = respuestas[humor];
-    const respuesta = pool[Math.floor(Math.random() * pool.length)];
+    // respuestas contextuales
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    let respuesta;
+
+    if (newP >= 100) {
+      respuesta = pick([
+        `Vale, vale, ${herName}... me has ablandado. ${yourName} tiene mucha suerte; toma tu regalo.`,
+        `¡Me rindo! Con esa labia no hay elfo que aguante. El regalo es tuyo, ${herName}.`
+      ]);
+    } else if (rude.test(text)) {
+      respuesta = pick([
+        `Oye, oye, que soy gruñón pero educado. Si me hablas con un poquito de cariño, hasta te cuento un secreto del Polo Norte.`,
+        `Uy, ese tono me pone el gorro de punta. Vamos a intentarlo otra vez, ${herName}, que yo sé que tienes encanto de sobra.`
+      ]);
+      score = Math.min(score, 0);
+    } else if (insult.test(text)) {
+      respuesta = pick([
+        `¡Auch! Eso le ha dolido a mi ego de elfo. Pero bueno, si me dices algo bonito igual se me pasa.`,
+        `Me caigo fatal, ¿eh? Pues anda que yo... vale, te doy otra oportunidad si me convences con algo más dulce.`
+      ]);
+      score = Math.min(score, 1);
+    } else if (asksName.test(text)) {
+      respuesta = pick([
+        `¿El nombre de tu novio? Ja, eso me lo sé: es ${yourName}. Pero eso no basta para soltar el regalo, cuéntame algo bonito de vosotros.`,
+        `Se llama ${yourName}, y hasta yo, que soy un gruñón, veo que te mira con ojitos. ¿Qué más me cuentas?`
+      ]);
+      score = Math.max(score, 3);
+    } else if (asksGift.test(text)) {
+      respuesta = pick([
+        `¿Que qué hay dentro? Ni lo sueñes, elfo profesional, boca cerrada. Convénceme y lo descubrirás.`,
+        `Eso es información clasificada del Polo Norte. Dame una buena razón para dártelo y hablamos.`
+      ]);
+      score = Math.max(score, 2);
+    } else if (greeting.test(text)) {
+      respuesta = pick([
+        `Hola, ${herName}. Yo soy Puck, el elfo gruñón de guardia. ¿Vienes a charlar o a convencerme de que te dé el regalo?`,
+        `¡Buenas! Aquí Puck, custodiando regalos y juzgando excusas. ¿Qué me traes hoy?`
+      ]);
+    } else if (rejection.test(text)) {
+      respuesta = pick([
+        `¿Que no lo quieres? Pues yo me lo quedo y me hago un selfie con él. Venga, que sé que en el fondo sí lo quieres.`,
+        `Anda ya, ${herName}, no te hagas la dura conmigo. ¿Ni una razón pequeñita?`
+      ]);
+    } else if (persuade.test(text) && sweet.test(text)) {
+      respuesta = pick([
+        `Ay... eso ha sonado muy de verdad. ${yourName} tiene suerte, ¿eh? Me estás ablandando.`,
+        `Uf, cariño y argumentos, combinación peligrosa para un elfo gruñón. Sigue, que ya casi cedo.`
+      ]);
+    } else if (persuade.test(text) || creative.test(text)) {
+      respuesta = pick([
+        `Oye, eso está bien pensado. No esperaba que te lo curraras tanto, ${herName}. Dame otro empujoncito.`,
+        `Mmm, me gusta por dónde vas. Sigue contándome, que mi resistencia de elfo está bajando.`
+      ]);
+    } else if (sweet.test(text)) {
+      respuesta = pick([
+        `Ay, qué tierno... pero los halagos no abren la caja fuerte del Polo Norte. Cuéntame algo más personal.`,
+        `Eso me ha sacado una sonrisilla, no te voy a mentir. ¿Tienes alguna promesa o recuerdo para rematar?`
+      ]);
+    } else if (textRaw.length < 12) {
+      respuesta = pick([
+        `"${short}"... eso es muy corto para convencer a un elfo con 200 años de experiencia. ¿Me lo cuentas mejor?`,
+        `Te leo, ${herName}, pero necesito más chicha. Dime por qué te mereces este regalo.`
+      ]);
+    } else {
+      respuesta = pick([
+        `Te he escuchado: "${short}". No está mal, pero quiero saber más de ti y de ${yourName}. ¿Qué harías por ese regalo?`,
+        `Interesante... "${short}". Aun así, mi gorro sigue firme. Dame una razón que me llegue al corazoncito.`,
+        `Mmm, vale, te sigo. Pero si quieres este regalo, sorpréndeme con algo más tuyo, ${herName}.`
+      ]);
+    }
+
     return { respuesta, puntos_ganados: score, humor };
   }
 
@@ -287,7 +346,7 @@ Devuelve SIEMPRE este JSON exacto y nada más:
       const resp = await fetch('https://text.pollinations.ai/openai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: buildMessages(), model: 'openai', temperature: 0.9 })
+        body: JSON.stringify({ messages: buildMessages(), model: 'openai', temperature: 0.9, jsonMode: true })
       });
       if (resp.ok) {
         const data = await resp.json();
