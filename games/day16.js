@@ -13,13 +13,21 @@ export function startGame(container, config, onWin) {
   let running = true, won = false, lost = false, raf;
 
   const paddle = { baseW: 74, w: 74, h: 16, x: W / 2 - 37, y: H - 30, wideUntil: 0 };
-  const ball = { x: W / 2, y: H - 50, r: 8, vx: 3.4, vy: -3.8, stuck: true, slowUntil: 0, speedFactor: 1 };
+  function makeBall(x, y, vx, vy, stuck) {
+    return { x, y, r: 8, vx, vy, stuck: !!stuck, slowUntil: 0, speedFactor: 1 };
+  }
+  const balls = [makeBall(W / 2, H - 50, 3.4, -3.8, true)];
   const brickPad = 6, brickTop = 50;
   const brickW = (W - brickPad * (cols + 1)) / cols;
   const brickH = 20;
   const bricks = [];
   const buffs = []; // {x,y,vy,type}
-  const buffTypes = ['wide', 'slow'];
+  const buffTypes = ['wide', 'slow', 'multi'];
+  const buffMeta = {
+    wide:  { emoji: '↔️', color: '#2e7d32' },
+    slow:  { emoji: '🐢', color: '#1565c0' },
+    multi: { emoji: '💖', color: '#ad1457' }
+  };
 
   let lives = 3;
   let level = 1;
@@ -46,22 +54,21 @@ export function startGame(container, config, onWin) {
     paddle.x = Math.max(0, Math.min(W - paddle.w, paddle.x));
   }
 
-  function resetBall() {
-    ball.x = paddle.x + paddle.w / 2; ball.y = paddle.y - ball.r - 2;
-    ball.vx = (Math.random() > 0.5 ? 1 : -1) * 3.4; ball.vy = -3.8; ball.stuck = true;
-    ball.speedFactor = 1; ball.slowUntil = 0;
+  function resetBalls() {
+    balls.length = 0;
+    balls.push(makeBall(paddle.x + paddle.w / 2, paddle.y - 8 - 2, (Math.random() > 0.5 ? 1 : -1) * 3.4, -3.8, true));
   }
 
-  function resetPaddleAndBall() {
+  function resetPaddleAndBalls() {
     paddle.w = paddle.baseW;
     paddle.wideUntil = 0;
     clampPaddle();
     buffs.length = 0;
-    resetBall();
+    resetBalls();
   }
 
   buildLevel(1);
-  resetBall();
+  resetBalls();
 
   function drawHeart(x, y, r, color) {
     ctx.save(); ctx.translate(x, y); ctx.fillStyle = color;
@@ -86,13 +93,14 @@ export function startGame(container, config, onWin) {
   }
 
   function drawBuff(b) {
+    const meta = buffMeta[b.type] || { emoji: '?', color: '#666' };
     ctx.save();
     ctx.translate(b.x, b.y);
-    ctx.fillStyle = b.type === 'wide' ? '#2e7d32' : '#1565c0';
-    ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = meta.color;
+    ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = '#f0d77a'; ctx.lineWidth = 2; ctx.stroke();
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(b.type === 'wide' ? 'W' : 'S', 0, 1);
+    ctx.font = '14px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(meta.emoji, 0, 1);
     ctx.restore();
   }
 
@@ -109,9 +117,11 @@ export function startGame(container, config, onWin) {
       ctx.fillStyle = 'rgba(255,255,255,0.25)';
       ctx.fillRect(b.x + 3, b.y + 3, b.w - 6, 4);
       if (b.buff) {
-        ctx.fillStyle = 'rgba(255,255,255,0.9)';
-        ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(b.buff === 'wide' ? 'W' : 'S', b.x + b.w / 2, b.y + b.h / 2 + 1);
+        const meta = buffMeta[b.buff];
+        if (meta) {
+          ctx.font = '12px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(meta.emoji, b.x + b.w / 2, b.y + b.h / 2 + 1);
+        }
       }
     }
 
@@ -125,23 +135,23 @@ export function startGame(container, config, onWin) {
     if (avatar.complete && avatar.naturalWidth) ctx.drawImage(avatar, paddle.x + paddle.w / 2 - 12, paddle.y + paddle.h / 2 - 12, 24, 24);
     ctx.restore();
 
-    // ball (glow if piercing fall)
-    if (ball.vy > 0 && !ball.stuck) {
-      ctx.save(); ctx.shadowColor = '#ff6b81'; ctx.shadowBlur = 12;
-      drawHeart(ball.x, ball.y - 6, 7.5, '#ff9fb0'); ctx.restore();
-    } else {
-      drawHeart(ball.x, ball.y - 6, 7, '#ff6b81');
+    // balls (glow if piercing fall)
+    for (const ball of balls) {
+      if (ball.vy > 0 && !ball.stuck) {
+        ctx.save(); ctx.shadowColor = '#ff6b81'; ctx.shadowBlur = 12;
+        drawHeart(ball.x, ball.y - 6, 7.5, '#ff9fb0'); ctx.restore();
+      } else {
+        drawHeart(ball.x, ball.y - 6, 7, '#ff6b81');
+      }
     }
 
     ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(8, 8, W - 16, 34);
     ctx.fillStyle = '#fff'; ctx.font = 'bold 13px "Plus Jakarta Sans",sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     const hearts = '❤'.repeat(lives) + '♡'.repeat(Math.max(0, 3 - lives));
     ctx.fillText(`Nivel ${level}/${maxLevels}  ${hearts}`, 16, 25);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = ball.vy > 0 && !ball.stuck ? '#ff9fb0' : '#f2c6ce';
-    ctx.fillText(ball.vy > 0 && !ball.stuck ? 'Perforador' : 'Atrapa buffs', W - 16, 25);
 
-    if (ball.stuck && !won && !lost) {
+    const anyStuck = balls.some(b => b.stuck);
+    if (anyStuck && !won && !lost) {
       ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(0, H / 2 - 26, W, 52);
       ctx.fillStyle = '#f2c6ce'; ctx.font = '16px "Plus Jakarta Sans",sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('Toca para lanzar el corazón', W / 2, H / 2 + 6);
@@ -162,8 +172,23 @@ export function startGame(container, config, onWin) {
       clampPaddle();
       paddle.x = Math.max(0, Math.min(W - paddle.w, paddle.x - 18));
     } else if (type === 'slow') {
-      ball.speedFactor = 0.7;
-      ball.slowUntil = now + 6000;
+      for (const b of balls) { b.speedFactor = 0.7; b.slowUntil = now + 6000; }
+    } else if (type === 'multi') {
+      const source = balls.find(b => !b.stuck) || balls[0];
+      if (source) {
+        const baseAngle = Math.atan2(source.vy, source.vx || -0.001);
+        const speed = Math.max(3.8, Math.hypot(source.vx, source.vy) || 4.2);
+        const offsets = [-0.45, 0.45];
+        for (const off of offsets) {
+          const a = baseAngle + off;
+          balls.push(makeBall(source.x, source.y, Math.cos(a) * speed, Math.sin(a) * speed, false));
+        }
+        if (source.stuck) {
+          source.stuck = false;
+          source.vx = Math.cos(baseAngle) * speed;
+          source.vy = Math.sin(baseAngle) * speed;
+        }
+      }
     }
   }
 
@@ -178,12 +203,20 @@ export function startGame(container, config, onWin) {
       paddle.wideUntil = 0;
       clampPaddle();
     }
-    if (ball.slowUntil && now > ball.slowUntil) { ball.speedFactor = 1; ball.slowUntil = 0; }
+    for (const b of balls) {
+      if (b.slowUntil && now > b.slowUntil) { b.speedFactor = 1; b.slowUntil = 0; }
+    }
 
     if (!won && !lost) {
-      if (ball.stuck) {
-        ball.x = paddle.x + paddle.w / 2; ball.y = paddle.y - ball.r - 2;
-      } else {
+      for (const ball of balls) {
+        if (ball.stuck) {
+          ball.x = paddle.x + paddle.w / 2;
+          ball.y = paddle.y - ball.r - 2;
+        }
+      }
+
+      const moving = balls.filter(b => !b.stuck);
+      for (const ball of moving) {
         ball.x += ball.vx * ball.speedFactor * dt;
         ball.y += ball.vy * ball.speedFactor * dt;
         if (ball.x - ball.r < 0) { ball.x = ball.r; ball.vx *= -1; }
@@ -208,41 +241,46 @@ export function startGame(container, config, onWin) {
           }
         }
         if (bounce) ball.vy *= -1;
+      }
 
-        // buffs falling
-        for (let i = buffs.length - 1; i >= 0; i--) {
-          const f = buffs[i];
-          f.y += f.vy * dt;
-          if (f.y + 10 >= paddle.y && f.y - 10 <= paddle.y + paddle.h && f.x >= paddle.x && f.x <= paddle.x + paddle.w) {
-            applyBuff(f.type); buffs.splice(i, 1); continue;
-          }
-          if (f.y - 12 > H) buffs.splice(i, 1);
+      // remove fallen balls
+      for (let i = balls.length - 1; i >= 0; i--) {
+        const b = balls[i];
+        if (!b.stuck && b.y - b.r > H) balls.splice(i, 1);
+      }
+      if (balls.length === 0) {
+        lives--;
+        if (lives <= 0) {
+          lost = true;
+          running = false;
+          draw();
+          return;
+        } else {
+          resetPaddleAndBalls();
         }
+      }
 
-        if (bricks.every(b => !b.alive)) {
-          if (level < maxLevels) {
-            level++;
-            buildLevel(level);
-            resetPaddleAndBall();
-          } else {
-            won = true;
-            running = false;
-            draw();
-            setTimeout(() => onWin && onWin(), 700);
-            return;
-          }
+      // buffs falling
+      for (let i = buffs.length - 1; i >= 0; i--) {
+        const f = buffs[i];
+        f.y += f.vy * dt;
+        if (f.y + 10 >= paddle.y && f.y - 10 <= paddle.y + paddle.h && f.x >= paddle.x && f.x <= paddle.x + paddle.w) {
+          applyBuff(f.type); buffs.splice(i, 1); continue;
         }
+        if (f.y - 12 > H) buffs.splice(i, 1);
+      }
 
-        if (ball.y - ball.r > H) {
-          lives--;
-          if (lives <= 0) {
-            lost = true;
-            running = false;
-            draw();
-            return;
-          } else {
-            resetPaddleAndBall();
-          }
+      if (bricks.every(b => !b.alive)) {
+        if (level < maxLevels) {
+          level++;
+          buildLevel(level);
+          resetPaddleAndBalls();
+        } else {
+          won = true;
+          running = false;
+          draw();
+          setTimeout(() => onWin && onWin(), 700);
+          return;
         }
       }
     }
@@ -259,7 +297,9 @@ export function startGame(container, config, onWin) {
 
   canvas.addEventListener('pointerdown', (e) => {
     setPaddle(e.clientX);
-    if (ball.stuck && !lost && !won) { ball.stuck = false; }
+    if (!lost && !won) {
+      for (const b of balls) if (b.stuck) b.stuck = false;
+    }
   });
   canvas.addEventListener('pointermove', (e) => {
     if (e.buttons === 0 && e.pointerType === 'mouse') return;

@@ -15,12 +15,22 @@ export function startGame(container, config, onWin) {
   const revealImg = new Image();
   if (revealSrc) revealImg.src = revealSrc;
 
-  // figura por defecto: marco para enmarcar la foto revelada
+  // figura por defecto: corazón
   const defaultPoints = [
-    { xPct: 0.25, yPct: 0.22 }, { xPct: 0.5, yPct: 0.18 }, { xPct: 0.75, yPct: 0.22 },
-    { xPct: 0.8, yPct: 0.4 }, { xPct: 0.8, yPct: 0.62 }, { xPct: 0.75, yPct: 0.8 },
-    { xPct: 0.5, yPct: 0.84 }, { xPct: 0.25, yPct: 0.8 }, { xPct: 0.2, yPct: 0.62 },
-    { xPct: 0.2, yPct: 0.4 }
+    { xPct: 0.50, yPct: 0.88 },
+    { xPct: 0.34, yPct: 0.75 },
+    { xPct: 0.20, yPct: 0.60 },
+    { xPct: 0.14, yPct: 0.45 },
+    { xPct: 0.16, yPct: 0.32 },
+    { xPct: 0.25, yPct: 0.23 },
+    { xPct: 0.37, yPct: 0.23 },
+    { xPct: 0.50, yPct: 0.33 },
+    { xPct: 0.63, yPct: 0.23 },
+    { xPct: 0.75, yPct: 0.23 },
+    { xPct: 0.84, yPct: 0.32 },
+    { xPct: 0.86, yPct: 0.45 },
+    { xPct: 0.80, yPct: 0.60 },
+    { xPct: 0.66, yPct: 0.75 }
   ];
   const shape = Array.isArray(cfg.shapePoints) && cfg.shapePoints.length >= 4 ? cfg.shapePoints : defaultPoints;
   const points = shape.map((p, i) => ({ n: i + 1, x: p.xPct * W, y: p.yPct * H, hit: false }));
