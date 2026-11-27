@@ -18,7 +18,7 @@ export function startGame(container, config, onWin) {
 
   const title = document.createElement('div');
   title.style.cssText = 'color:#f2c6ce;font-weight:600;';
-  title.textContent = `Para el tiempo entre ${min.toFixed(2)} y ${max.toFixed(2)} s`;
+  title.textContent = `Para el tiempo en el segundo ${min.toFixed(2)}`;
   root.appendChild(title);
 
   const avatarRow = document.createElement('div');

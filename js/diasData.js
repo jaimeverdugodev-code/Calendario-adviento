@@ -93,7 +93,7 @@ export const DIAS = [
     day: 10,
     title: "Para el Tiempo",
     gameId: "day10",
-    gameConfig: { min: 5.0, max: 5.10 },
+    gameConfig: { min: 5.0, max: 5.0 },
     photo: "public/fotos/dia10.jpeg",
     message: "El mejor momento es cualquiera si es contigo."
   },
@@ -198,8 +198,8 @@ export const DIAS = [
     title: "Convence al Elfo Gruñón",
     gameId: "day23",
     gameConfig: {
-      herName: "[NOMBRE_ELLA]",
-      yourName: "[TU_NOMBRE]"
+      herName: "Jaime",
+      yourName: "Bea"
       // La clave OpenAI se configura en Vercel como OPENAI_API_KEY (lado servidor, /api/chat).
       // No pongas apiKey en el cliente.
     },
