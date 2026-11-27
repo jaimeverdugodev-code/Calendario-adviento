@@ -23,6 +23,15 @@ export function startGame(container, config, onWin) {
     { base: '#d4af37', glow: '#ffe082', label: '✦' },
   ];
 
+  const SEQUENCES = [
+    [0, 2, 1, 3, 0, 2], // secuencia 1
+    [1, 3, 0, 2, 3, 1], // secuencia 2
+    [2, 0, 3, 1, 0, 3], // secuencia 3
+    [3, 1, 2, 0, 1, 2], // secuencia 4 (si falla)
+    [0, 1, 3, 2, 0, 3]  // secuencia 5 (si falla)
+  ];
+
+  let sequenceIndex = 0;
   let sequence = [];
   let inputIndex = 0;
   let accepting = false;
@@ -126,17 +135,14 @@ export function startGame(container, config, onWin) {
     status.textContent = 'Tu turno';
   }
 
+  function activeSequence() {
+    return SEQUENCES[sequenceIndex % SEQUENCES.length];
+  }
+
   async function nextLevel() {
     level++;
-    let next;
-    if (sequence.length >= 2 && sequence[sequence.length - 1] === sequence[sequence.length - 2]) {
-      const banned = sequence[sequence.length - 1];
-      const opts = [0, 1, 2, 3].filter(i => i !== banned);
-      next = opts[Math.floor(Math.random() * opts.length)];
-    } else {
-      next = Math.floor(Math.random() * 4);
-    }
-    sequence.push(next);
+    const full = activeSequence();
+    sequence = full.slice(0, Math.min(level, full.length));
     await playSequence();
   }
 
@@ -159,16 +165,17 @@ export function startGame(container, config, onWin) {
       accepting = false;
       // sonido de error
       try { const ctx = ensureAudio(); if (ctx) { const o=ctx.createOscillator(); const g=ctx.createGain(); o.type='sawtooth'; o.frequency.value=140; const t=ctx.currentTime; g.gain.setValueAtTime(0.12,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.25); o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+0.3);} } catch(e){}
-      status.textContent = 'Ups, esa no era. Intenta de nuevo';
-      startBtn.style.display = '';
-      startBtn.textContent = 'Reintentar';
-      sequence = []; level = 0;
+      sequenceIndex = (sequenceIndex + 1) % SEQUENCES.length;
+      sequence = []; level = 0; inputIndex = 0;
+      status.textContent = 'Ups, esa no era. Prueba con otra secuencia...';
+      setTimeout(() => { if (!accepting) nextLevel(); }, 900);
     }
   }
 
   startBtn.addEventListener('click', () => {
     ensureAudio();
-    sequence = []; level = 0;
+    sequence = []; level = 0; inputIndex = 0;
+    sequenceIndex = 0;
     startBtn.style.display = 'none';
     nextLevel();
   });
